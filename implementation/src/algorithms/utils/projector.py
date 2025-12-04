@@ -6,7 +6,7 @@ from .typing import Vector, Scalar
 import numpy as np
 
 class Projector:
-    def __init__(self, bounds: Optional[Bounds] = None, constraints: Constraints = []): 
+    def __init__(self, bounds: Optional[Bounds] = None, constraints: Constraints = [], tol: float = 1e-9): 
         """Create a projector for a convex set defined by bounds and constraints
 
         Args:
@@ -15,6 +15,7 @@ class Projector:
         """
         self.bounds = bounds
         self.constraints = [constraint.to_scipy_constraint() for constraint in constraints]
+        self.tol = tol
         
     def __call__(self, x: Vector) -> Vector:
         def objective(y: Vector) -> Scalar:
@@ -30,6 +31,7 @@ class Projector:
             method="SLSQP",
             bounds=self.bounds,
             constraints=self.constraints,
+            tol=self.tol
         )
 
         assert res.success, f"Projection failed: {res.message}"

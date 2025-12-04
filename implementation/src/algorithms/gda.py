@@ -38,8 +38,6 @@ class OptimizationResult:
 
 class GDA:
     """
-    Gradient Descent Algorithm (GDA) with projection and backtracking line search.
-
     This class implements a projected gradient descent method to minimize a scalar function
     subject to bounds and constraints.
 
@@ -47,14 +45,25 @@ class GDA:
         function (ScalarFunction): The objective function to minimize.
         bounds (Bounds): The bounds on the variables.
         constraints (Constraints): A list of constraints.
+        tol (float, optional): Tolerance for convergence. Defaults to 1e-9.
     """
 
     def __init__(
-        self, function: ScalarFunction, bounds: Bounds, constraints: Constraints
+        self, function: ScalarFunction, bounds: Bounds, constraints: Constraints, tol: float = 1e-9
     ):
         self.function = function
-        self.projector: VectorFunction = Projector(bounds=bounds, constraints=constraints)
+        self.projector = Projector(bounds=bounds, constraints=constraints, tol=tol)
         self.gradient: VectorFunction = grad(function)
+        self._tol = tol
+    
+    @property
+    def tol(self) -> float:
+        return self._tol
+    
+    @tol.setter 
+    def tol(self, value: float):
+        self._tol = value
+        self.projector.tol = value
 
     def solve(
         self,
@@ -64,6 +73,7 @@ class GDA:
         kappa: float = 0.5,
         max_iter: int = 1000,
         stop_if_stationary: bool = True,
+        tol: Optional[float] = None,
     ) -> OptimizationResult:
         """
         Solve the optimization problem using Projected Gradient Descent.
@@ -79,6 +89,9 @@ class GDA:
         Returns:
             OptimizationResult: The result of the optimization.
         """
+        original_tol = self.tol
+        if tol is not None:
+            self.tol = tol
         x_k = self.projector(x0)
         lambda_k = lambda_0
         f_x_k = self.function(x_k)
@@ -90,11 +103,12 @@ class GDA:
             f_x_k1 = self.function(x_k1)
             if f_x_k1 > f_x_k - sigma * np.dot(grad_f_x_k, x_k - x_k1):
                 lambda_k *= kappa
-            if stop_if_stationary and np.allclose(x_k, x_k1):
+            if stop_if_stationary and np.allclose(x_k, x_k1, atol=tol):
                 break
             x_k = x_k1
             f_x_k = f_x_k1
 
+        self.tol = original_tol
         return OptimizationResult(
             x_opt=x_k,
             fun_opt=f_x_k,

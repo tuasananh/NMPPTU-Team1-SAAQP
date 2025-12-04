@@ -1,12 +1,6 @@
-from typing import TypedDict, List
+from typing import List, Optional
 import numpy as np
-from .utils import (
-    ScalarFunction,
-    VectorFunction,
-    Bounds,
-    Constraints,
-    Projector
-)
+from .utils import ScalarFunction, VectorFunction, Bounds, Constraints, Projector
 from autograd import grad
 
 
@@ -49,21 +43,19 @@ class GDA:
     """
 
     def __init__(
-        self, function: ScalarFunction, bounds: Bounds, constraints: Constraints, tol: float = 1e-9
+        self,
+        function: ScalarFunction,
+        bounds: Bounds,
+        constraints: Constraints,
+        tol: float = 1e-9,
+        projector_max_iter=1000,
     ):
         self.function = function
-        self.projector = Projector(bounds=bounds, constraints=constraints, tol=tol)
+        self.bounds = bounds
+        self.constraints = constraints
         self.gradient: VectorFunction = grad(function)
-        self._tol = tol
-    
-    @property
-    def tol(self) -> float:
-        return self._tol
-    
-    @tol.setter 
-    def tol(self, value: float):
-        self._tol = value
-        self.projector.tol = value
+        self.tol = tol
+        self.projector_max_iter = projector_max_iter
 
     def solve(
         self,
@@ -74,6 +66,7 @@ class GDA:
         max_iter: int = 1000,
         stop_if_stationary: bool = True,
         tol: Optional[float] = None,
+        projector_max_iter: Optional[int] = None,
     ) -> OptimizationResult:
         """
         Solve the optimization problem using Projected Gradient Descent.
@@ -89,26 +82,34 @@ class GDA:
         Returns:
             OptimizationResult: The result of the optimization.
         """
-        original_tol = self.tol
-        if tol is not None:
-            self.tol = tol
-        x_k = self.projector(x0)
+        tol = tol if tol is not None else self.tol
+        projector_max_iter = (
+            projector_max_iter
+            if projector_max_iter is not None
+            else self.projector_max_iter
+        )
+        projector = Projector(
+            bounds=self.bounds,
+            constraints=self.constraints,
+            tol=tol,
+            max_iter=projector_max_iter,
+        )
+        x_k = projector(x0)
         lambda_k = lambda_0
         f_x_k = self.function(x_k)
         xs = []
         for _ in range(max_iter):
             xs.append(x_k)
             grad_f_x_k = self.gradient(x_k)
-            x_k1 = self.projector(x_k - lambda_k * grad_f_x_k)
+            x_k1 = projector(x_k - lambda_k * grad_f_x_k)
             f_x_k1 = self.function(x_k1)
             if f_x_k1 > f_x_k - sigma * np.dot(grad_f_x_k, x_k - x_k1):
                 lambda_k *= kappa
-            if stop_if_stationary and np.allclose(x_k, x_k1, atol=tol):
+            if stop_if_stationary and np.allclose(x_k, x_k1, atol=tol, rtol=tol):
                 break
             x_k = x_k1
             f_x_k = f_x_k1
 
-        self.tol = original_tol
         return OptimizationResult(
             x_opt=x_k,
             fun_opt=f_x_k,

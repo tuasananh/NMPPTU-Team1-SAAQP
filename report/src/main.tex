@@ -1,1 +1,57 @@
-%% Team 1 viet report tai file nay
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc}
+\usepackage[vietnamese]{babel}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
+
+\geometry{top=3cm,bottom=3cm,left=3cm,right=3cm}
+
+\title{BÁO CÁO \\ Thuật toán tự thích nghi cho lập trình tựa lồi và ứng dụng trong học máy}
+
+\author{
+\begin{tabular}{c}
+Nguyễn Ngọc Tuấn Anh, Trần Tuấn Anh, Nguyễn Hữu Chính, \\
+Trần Mạnh Cường, Đỗ Hải Đăng, Bùi Tuấn Đạt,\\
+Nguyễn Hồng Đạt, Phạm Đình Minh Đức, Bùi Tiến Dũng\\
+Trần Huy Dương, Nguyễn Khắc Duy, 
+Nguyễn Hoàng Gia
+\end{tabular}
+}
+
+\date{}
+\begin{document}
+
+\maketitle
+
+\setcounter{chapter}{0}   
+
+\renewcommand{\thesection}{\arabic{section}}  
+
+\begingroup
+\hypersetup{linkcolor=black}   
+\tableofcontents
+\endgroup
+\newpage
+
+\input{chapters/1_introduction}
+
+\input{chapters/2_preliminaries}
+
+\input{chapters/3_proofs}
+
+\input{chapters/4_experiments}
+
+\input{chapters/5_applications}
+
+\input{chapters/6_conclusion}
+
+\renewcommand{\refname}{Tài liệu tham khảo}
+\nocite{*}
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

@@ -1,7 +1,7 @@
 from typing import List, Optional
 import numpy as np
 from .utils import ScalarFunction, VectorFunction, Bounds, Constraints, Projector
-from autograd import grad
+from autograd import grad, hessian
 
 class OptimizationResult:
     """
@@ -53,6 +53,7 @@ class GD:
         self.bounds = bounds
         self.constraints = constraints
         self.gradient: VectorFunction = grad(function)
+        self.hessian = hessian(function)
         self.tol = tol
         self.projector_max_iter = projector_max_iter
 
@@ -94,6 +95,11 @@ class GD:
         )
         
         x_k = projector(x0)
+        H = self.hessian(x_k)
+        L = np.max(np.abs(np.linalg.eigvalsh(H)))
+        if L > 1e-12:
+            step_size = 1.0 / L
+            
         xs = []
         for _ in range(max_iter):
             xs.append(x_k.copy()) 
@@ -103,7 +109,6 @@ class GD:
                 x_k = x_k1
                 xs.append(x_k.copy()) 
                 break
-            
             x_k = x_k1
         f_x_k = self.function(x_k)
 

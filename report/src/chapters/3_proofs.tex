@@ -3,7 +3,6 @@
 
 Trong mục này, ta trình bày thuật toán đề xuất và thiết lập sự hội tụ của nó. Dựa trên các bổ đề và mệnh đề đã nêu ở Mục \ref{sec:preliminaries}, ta đưa ra kết quả chính như sau.
 
-% --- THUẬT TOÁN 1 ---
 \noindent \textbf{Thuật toán 1 (Thuật toán Thích nghi Gradient Descent - GDA)}
 
 \indent \textbf{Bước 0.} Chọn $x^{0} \in C$, $\lambda_{0} \in (0, +\infty)$, $\sigma, \kappa \in (0, 1)$. Đặt $k=0$.
@@ -16,8 +15,6 @@ Nếu $f(x^{k+1}) \le f(x^{k}) - \sigma \langle \nabla f(x^{k}), x^{k} - x^{k+1}
 
 \indent \textbf{Bước 2.} Cập nhật $k := k + 1$. Nếu $x^{k+1} = x^{k}$ thì DỪNG, ngược lại quay về Bước 1.
 
-
-% --- NHẬN XÉT 1 ---
 \begin{remark} \label{rem:1}
     Nếu Thuật toán GDA dừng tại bước $k$, thì $x^{k}$ là một điểm dừng của bài toán $(OP(f,C))$.
     
@@ -29,12 +26,11 @@ Nếu $f(x^{k+1}) \le f(x^{k}) - \sigma \langle \nabla f(x^{k}), x^{k} - x^{k+1}
     \begin{equation} \label{eq:rem1_2}
         \langle \nabla f(x^{k}), z - x^{k} \rangle \ge 0 \quad \forall z \in C,
     \end{equation}
-    điều này có nghĩa là $x^{k}$ là một điểm dừng của bài toán. Nếu thêm vào đó, $f$ là giả lồi, từ (\ref{eq:rem1_2}), nó suy ra rằng $f(z) \ge f(x^{k})$ với mọi $z \in C$, hay $x^{k}$ là một nghiệm của $OP(f, C)$.
+    điều này có nghĩa là $x^{k}$ là một điểm dừng của bài toán. Bên cạnh đó, nếu $f$ là hàm giả lồi thì từ (\ref{eq:rem1_2}), nó ngụ ý rằng với mọi $z \in C$ thỏa mãn $f(z) \ge f(x^{k})$,  $x^{k}$ là một nghiệm của $OP(f, C)$.
 \end{remark}
 
 Bây giờ, giả sử rằng thuật toán tạo ra một dãy vô hạn. Ta sẽ chứng minh rằng dãy này hội tụ đến một nghiệm của bài toán $OP(f, C)$.
 
-% --- ĐỊNH LÝ 1 ---
 \begin{theorem} \label{thm:convergence}
     Giả sử rằng dãy $\{x^{k}\}$ được tạo ra bởi Thuật toán GDA. Khi đó, dãy $\{f(x^{k})\}$ là hội tụ và mỗi điểm giới hạn (nếu có) của dãy $\{x^{k}\}$ là một điểm dừng của bài toán.
     
@@ -46,11 +42,11 @@ Bây giờ, giả sử rằng thuật toán tạo ra một dãy vô hạn. Ta s�
 \end{theorem}
 
 \begin{proof}
-    Áp dụng Mệnh đề \ref{prop:2}, ta có
+    Áp dụng Mệnh đề \ref{prop:3}, ta có
     \begin{equation} \label{eq:proof_3}
         f(x^{k+1}) \le f(x^{k}) + \langle \nabla f(x^{k}), x^{k+1} - x^{k} \rangle + \frac{L}{2} \| x^{k+1} - x^{k} \|^{2}.
     \end{equation}
-    Trong (\ref{eq:rem1_1}), lấy $z = x^{k} \in C$, ta đi đến
+    Ở (\ref{eq:rem1_1}), lấy $z = x^{k} \in C$, ta có
     \begin{equation} \label{eq:proof_4}
         \langle \nabla f(x^{k}), x^{k+1} - x^{k} \rangle \le -\frac{1}{\lambda_{k}} \| x^{k+1} - x^{k} \|^{2}.
     \end{equation}
@@ -58,11 +54,10 @@ Bây giờ, giả sử rằng thuật toán tạo ra một dãy vô hạn. Ta s�
     \begin{equation} \label{eq:proof_5}
         f(x^{k+1}) \le f(x^{k}) - \sigma \langle \nabla f(x^{k}), x^{k} - x^{k+1} \rangle - \left( \frac{1 - \sigma}{\lambda_{k}} - \frac{L}{2} \right) \| x^{k+1} - x^{k} \|^{2}.
     \end{equation}
-    Bây giờ ta khẳng định rằng $\{\lambda_{k}\}$ bị chặn dưới tách khỏi số 0, hay nói cách khác, kích thước bước nhảy thay đổi hữu hạn lần.
+    Bây giờ ta khẳng định rằng $\{\lambda_{k}\}$ bị chặn dưới cách xa số 0, hay nói cách khác, kích thước bước nhảy thay đổi hữu hạn lần. Thật vậy, giả sử ngược lại rằng $\lambda_{k} \to 0$. Từ (\ref{eq:proof_5}), tồn tại $k_{0} \in \mathbb{N}$ thỏa mãn
     
-    Thật vậy, giả sử ngược lại rằng $\lambda_{k} \to 0$. Từ (\ref{eq:proof_5}), tồn tại $k_{0} \in \mathbb{N}$ thỏa mãn
     \[ f(x^{k+1}) \le f(x^{k}) - \sigma \langle \nabla f(x^{k}), x^{k} - x^{k+1} \rangle \quad \forall k \ge k_{0}. \]
-    Theo cách xây dựng của $\lambda_{k}$, bất đẳng thức cuối cùng ngụ ý rằng $\lambda_{k} = \lambda_{k_{0}}$ với mọi $k \ge k_{0}$. Điều này là mâu thuẫn. Và do đó, tồn tại $k_{1} \in \mathbb{N}$ sao cho với mọi $k \ge k_{1}$, ta có $\lambda_{k} = \lambda_{k_{1}}$ và
+    Theo cách xây dựng $\lambda_{k}$, bất đẳng thức cuối cùng ngụ ý rằng $\lambda_{k} = \lambda_{k_{0}}$ với mọi $k \ge k_{0}$. Điều này là mâu thuẫn. Và do đó, tồn tại $k_{1} \in \mathbb{N}$ sao cho với mọi $k \ge k_{1}$, ta có $\lambda_{k} = \lambda_{k_{1}}$ và
     \begin{equation} \label{eq:proof_6}
         f(x^{k+1}) \le f(x^{k}) - \sigma \langle \nabla f(x^{k}), x^{k} - x^{k+1} \rangle.
     \end{equation}
@@ -81,7 +76,7 @@ Bây giờ, giả sử rằng thuật toán tạo ra một dãy vô hạn. Ta s�
     
     Bây giờ, giả sử rằng $f$ là tựa lồi trên $C$. Ký hiệu
     \[ U := \{ x \in C : f(x) \le f(x^{k}) \forall k \ge 0 \}. \]
-    Lưu ý rằng $U$ chứa tập nghiệm của $OP(f, C)$, và do đó, là không rỗng. Lấy $\hat{x} \in U$. Vì $f(x^{k}) \ge f(\hat{x})$ với mọi $k \ge 0$, nó ngụ ý rằng
+    Lưu ý rằng $U$ chứa tập nghiệm của $OP(f, C)$, nên nó không rỗng. Lấy $\hat{x} \in U$. Vì $f(x^{k}) \ge f(\hat{x})$ với mọi $k \ge 0$, nó ngụ ý rằng
     \begin{equation} \label{eq:proof_9}
         \langle \nabla f(x^{k}), \hat{x} - x^{k} \rangle \le 0 \quad \forall k \ge 0.
     \end{equation}
@@ -96,7 +91,6 @@ Bây giờ, giả sử rằng thuật toán tạo ra một dãy vô hạn. Ta s�
     Lưu ý rằng mỗi điểm giới hạn của $\{x^{k}\}$ là một điểm dừng của bài toán. Khi đó, toàn bộ dãy $\{x^{k}\}$ hội tụ về $\bar{x}$ – một điểm dừng của bài toán. Hơn nữa, khi $f$ là giả lồi, điểm dừng này trở thành một nghiệm của $OP(f, C)$.
 \end{proof}
 
-% --- NHẬN XÉT 2 ---
 \begin{remark}
     Trong Thuật toán GDA, ta có thể chọn $\lambda_{0} = \lambda$, với hằng số $\lambda \le 2(1-\sigma)/L$.
     Khi đó, ta có $(1-\sigma)/\lambda_{0} - L/2 \ge 0$. Kết hợp với (\ref{eq:proof_5}), điều này ngụ ý rằng điều kiện $f(x^{k+1}) \le f(x^{k}) - \sigma \langle \nabla f(x^{k}), x^{k} - x^{k+1} \rangle$ được thỏa mãn và bước nhảy $\lambda_{k} = \lambda$ cho mọi bước $k$.
@@ -104,7 +98,6 @@ Bây giờ, giả sử rằng thuật toán tạo ra một dãy vô hạn. Ta s�
     Thuật toán GD này đã được đề xuất trong các công trình trước đây. Vì nó là một trường hợp đặc biệt của Thuật toán GDA, sự hội tụ của nó được đảm bảo như các khẳng định trong Định lý \ref{thm:convergence}.
 \end{remark}
 
-% --- THUẬT TOÁN 2 (GD) ---
 \noindent \textbf{Thuật toán 2 (Thuật toán Gradient Descent - GD)}
 
 \indent \textbf{Bước 0.} Chọn $x^{0} \in C$, $\lambda \in (0, 2/L)$. Đặt $k = 0$.
@@ -120,7 +113,6 @@ Bây giờ, giả sử rằng thuật toán tạo ra một dãy vô hạn. Ta s�
 Lưu ý rằng tất cả các khẳng định của Định lý \ref{thm:convergence} vẫn đúng cho dãy $\{x^{k}\}$ được tạo ra bởi Thuật toán GD.
 Bây giờ, ta ước lượng tốc độ hội tụ của Thuật toán GDA trong việc giải các bài toán tối ưu hóa không ràng buộc.
 
-% --- HỆ QUẢ 1 ---
 \begin{corollary} \label{cor:1}
     Giả sử rằng $f$ là lồi, $C = \mathbb{R}^{m}$ và $\{x^{k}\}$ là dãy được tạo ra bởi Thuật toán GDA. Khi đó,
     \begin{equation}
@@ -145,11 +137,11 @@ Bây giờ, ta ước lượng tốc độ hội tụ của Thuật toán GDA tr
     \end{equation}
     trong đó $Q := \frac{\sigma \lambda_{k_{1}}}{M^{2}}$. Lưu ý rằng $\Delta_{k+1} \le \Delta_{k}$, từ (\ref{eq:cor_13}), ta thu được
     \[ \frac{1}{\Delta_{k+1}} \ge \frac{1}{\Delta_{k}} + Q \ge \dots \ge \frac{1}{\Delta_{k_{1}}} + (k - k_{1})Q, \]
-    điều này ngụ ý
+    điều này ngụ ý rằng
     \[ f(x^{k}) - f(x^{*}) = O\left(\frac{1}{k}\right). \]
 \end{proof}
 
-Để kết thúc phần này, ta trình bày một biến thể ngẫu nhiên của Thuật toán GDA để áp dụng trong học sâu quy mô lớn. Xem xét bài toán sau:
+Để kết thúc phần này, ta trình bày một biến thể ngẫu nhiên của Thuật toán GDA để áp dụng trong học sâu quy mô lớn. Ta xét bài toán sau:
 \begin{equation}
     \min_{x} \mathbb{E}[f_{\xi}(x)],
 \end{equation}
@@ -161,7 +153,6 @@ trong đó $x$ đại diện cho các tham số của mô hình (như trọng s�
 
 Thuật toán SGDA sau đây chứa một mô tả chi tiết. Ta để dành các kết quả lý thuyết chặt chẽ của Thuật toán SGDA cho công việc trong tương lai.
 
-% --- THUẬT TOÁN 3 (SGDA) ---
 \noindent \textbf{Thuật toán 3 (Thuật toán Thích nghi Gradient Descent Ngẫu nhiên - SGDA)}
 
 \indent \textbf{Bước 0.} Chọn $x^{0} \in C$, $\lambda_{0} \in (0, +\infty)$, $\sigma, \kappa \in (0, 1)$. Đặt $k=0$.

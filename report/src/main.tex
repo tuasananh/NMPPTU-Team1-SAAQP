@@ -8,6 +8,27 @@
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
 
+
+% --- DÁN ĐÈ ĐOẠN NÀY VÀO ---
+\newtheoremstyle{plain_custom}
+  {} {} {\itshape} {} {\bfseries} {} { } {} % Style in nghiêng (Định lý)
+
+\newtheoremstyle{definition_custom}
+  {} {} {\upshape} {} {\bfseries} {} { } {} % Style in thường (Định nghĩa)      
+
+\theoremstyle{definition_custom}
+\newtheorem{definition}{Định nghĩa}[section]
+\newtheorem{example}{Ví dụ}[section]
+\newtheorem{remark}{Nhận xét}[section]
+
+\theoremstyle{plain_custom}
+\newtheorem{theorem}{Định lý}[section]
+\newtheorem{lemma}{Bổ đề}[section]
+\newtheorem{proposition}{Mệnh đề}[section]
+\newtheorem{corollary}{Hệ quả}[section]
+
+\renewcommand{\proofname}{Chứng minh}
+
 \geometry{top=3cm,bottom=3cm,left=3cm,right=3cm}
 
 \title{BÁO CÁO \\ Thuật toán tự thích nghi cho lập trình tựa lồi và ứng dụng trong học máy}

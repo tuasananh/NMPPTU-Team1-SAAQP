@@ -1,7 +1,9 @@
 import numpy as np
 from scipy.optimize import Bounds
 import autograd.numpy as anp
-from algorithms.utils import Projector, Constraint, ConstraintType
+from algorithms.utils import Projector
+from scipy.optimize import LinearConstraint, NonlinearConstraint
+from autograd import grad
 
 
 def test_simple_bounds():
@@ -37,7 +39,7 @@ def test_linear_equality_constraint():
     # Use large bounds effectively unbounded
     bounds = Bounds([-100, -100], [100, 100])
 
-    constraints = [Constraint(lhs=eq_constraint, type=ConstraintType.EQUAL_ZERO)]
+    constraints = [LinearConstraint([[1, 1]], lb=1.0, ub=1.0)]
 
     projector = Projector(bounds=bounds, constraints=constraints)
 
@@ -57,7 +59,7 @@ def test_linear_inequality_constraint():
         return x[0] + x[1] - 1.0
 
     bounds = Bounds([-100, -100], [100, 100])
-    constraints = [Constraint(lhs=ineq_constraint, type=ConstraintType.NON_NEGATIVE)]
+    constraints = [LinearConstraint([[1, 1]], lb=1.0, ub=np.inf)]
 
     projector = Projector(bounds=bounds, constraints=constraints)
 
@@ -79,7 +81,7 @@ def test_nonlinear_constraint_circle():
         return anp.sum(x**2) - 1.0
 
     bounds = Bounds([-2, -2], [2, 2])
-    constraints = [Constraint(lhs=circle_constraint, type=ConstraintType.EQUAL_ZERO)]
+    constraints = [NonlinearConstraint(fun=circle_constraint, lb=0.0, ub=0.0, jac=grad(circle_constraint))]
 
     projector = Projector(bounds=bounds, constraints=constraints)
 
@@ -102,7 +104,7 @@ def test_bounds_and_constraints_interaction():
     def line_constraint(x):
         return x[0] + x[1] - 3.0
 
-    constraints = [Constraint(lhs=line_constraint, type=ConstraintType.EQUAL_ZERO)]
+    constraints = [LinearConstraint([[1, 1]], lb=3.0, ub=3.0)]
 
     projector = Projector(bounds=bounds, constraints=constraints)
 
@@ -126,15 +128,9 @@ def test_multiple_constraints():
 
     bounds = Bounds([0, 0], [2, 2])
 
-    def ineq_fun(x):
-        return 1.0 - x[0] - x[1]
-
-    def eq_fun(x):
-        return x[0] - x[1]
-
     constraints = [
-        Constraint(lhs=ineq_fun, type=ConstraintType.NON_NEGATIVE),
-        Constraint(lhs=eq_fun, type=ConstraintType.EQUAL_ZERO),
+        LinearConstraint([[ 1, 1]], lb=-np.inf, ub=1.0),
+        LinearConstraint([[ 1, -1]], lb=0.0, ub=0.0),
     ]
 
     projector = Projector(bounds=bounds, constraints=constraints)

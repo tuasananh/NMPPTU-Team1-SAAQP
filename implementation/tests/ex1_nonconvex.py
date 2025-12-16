@@ -12,25 +12,16 @@ from algorithms import GDA
 from algorithms.utils import Projector
 
 
-# ==================================================
-# Objective function (Example 1)
-# ==================================================
 def f(x: np.ndarray) -> np.float64:
     x1, x2 = x
     return (x1**2 + x2**2 + 3.0) / (1.0 + 2.0*x1 + 8.0*x2)
 
 
-# ==================================================
-# Constraint: x1^2 + 2 x1 x2 >= 4
-# ==================================================
 def nonlinear_constraint_fun(x):
     x1, x2 = x
     return x1**2 + 2.0*x1*x2
 
 
-# ==================================================
-# Build projector
-# ==================================================
 bounds = Bounds([0.0, 0.0], [np.inf, np.inf])
 
 nonlinear_constraint = NonlinearConstraint(
@@ -45,9 +36,6 @@ projector = Projector(
 )
 
 
-# ==================================================
-# Run GDA
-# ==================================================
 if __name__ == "__main__":
     x0 = np.array([1.0, 2.0])
 

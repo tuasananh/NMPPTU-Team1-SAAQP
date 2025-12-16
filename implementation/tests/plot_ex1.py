@@ -4,9 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import Bounds, NonlinearConstraint
 
-# ==================================================
-# Add src/ to PYTHONPATH
-# ==================================================
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SRC_DIR = os.path.join(ROOT_DIR, "src")
 sys.path.insert(0, SRC_DIR)
@@ -14,27 +11,16 @@ sys.path.insert(0, SRC_DIR)
 from algorithms import GDA
 from algorithms.utils import Projector
 
-
-# ==================================================
-# Objective function (Example 1)
-# f(x) = (x1^2 + x2^2 + 3) / (1 + 2x1 + 8x2)
-# ==================================================
 def f(x: np.ndarray) -> np.float64:
     x1, x2 = x
     return (x1**2 + x2**2 + 3.0) / (1.0 + 2.0*x1 + 8.0*x2)
 
 
-# ==================================================
-# Constraint: x1^2 + 2 x1 x2 >= 4
-# ==================================================
 def constraint_fun(x):
     x1, x2 = x
     return x1**2 + 2.0*x1*x2
 
 
-# ==================================================
-# Projector
-# ==================================================
 bounds = Bounds([0.0, 0.0], [np.inf, np.inf])
 
 nonlinear_constraint = NonlinearConstraint(
@@ -49,9 +35,7 @@ projector = Projector(
 )
 
 
-# ==================================================
-# Initial points
-# ==================================================
+
 x0_list = [
     np.array([1.0, 2.0]),
     np.array([2.0, 0.8]),
@@ -67,9 +51,6 @@ labels = [
 MAX_PLOT_ITER = 100
 
 
-# ==================================================
-# Run GDA for each initial point
-# ==================================================
 results = []
 
 print("===== Computational results for Example 1 =====")
@@ -98,9 +79,7 @@ for i, x0 in enumerate(x0_list):
     print("Total iterations =", len(result.history))
 
 
-# ==================================================
-# Plot: Computational results for Example 1
-# ==================================================
+
 plt.figure(figsize=(7, 5))
 
 for result, label in zip(results, labels):

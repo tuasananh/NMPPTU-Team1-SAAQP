@@ -53,7 +53,7 @@ if __name__ == "__main__":
         tol=1e-8
     )
 
-    print("==== Example 1: Fractional Pseudoconvex ====")
+    print("==== Example 1 with GDA ====")
     print("x* =", result.x_opt)
     print("f(x*) =", result.fun_opt)
     print("Converged =", result.success)

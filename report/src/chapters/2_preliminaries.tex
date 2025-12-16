@@ -6,16 +6,16 @@ Trong toàn bộ bài báo, ta giả định rằng $C$ là một tập khác r�
     \min_{x\in C}f(x). \tag{OP(f,C)}
 \end{equation}
 
-Giả sử rằng tập nghiệm của $(OP(f,C))$ là không rỗng. Trước hết, ta nhắc lại một số định nghĩa và kết quả cơ bản sẽ được sử dụng trong phần tiếp theo của bài báo. Độc giả quan tâm có thể tham khảo Bauschke và Combettes \cite{bauschke2011convex} và Rockafellar \cite{rockafellar1970convex} để biết thêm về các tài liệu tham khảo. Với $x\in\mathbb{R}^{m}$ ký hiệu bởi $P_{C}(x)$ là hình chiếu của $x$ lên $C$, tức là:
+Giả sử rằng tập nghiệm của $(OP(f,C))$ là không rỗng. Trước hết, ta nhắc lại một số định nghĩa và kết quả cơ bản sẽ được sử dụng trong phần tiếp theo của bài báo. Chứng minh chi tiết được trình bày trong \cite{bauschke2011convex} và \cite{rockafellar1970convex}. Với $x\in\mathbb{R}^{m}$ ký hiệu bởi $P_{C}(x)$ là hình chiếu của $x$ lên $C$, tức là:
 \begin{equation}
-    P_{C}(x):=\text{argmin}\{||z-x||:z\in C\}.
+    P_{C}(x):=\text{argmin}\{||z-x||:z\in C\}. \nonumber
 \end{equation}
 
 \begin{proposition}[Bauschke và Combettes \cite{bauschke2011convex}] \label{prop:1}
-    cho rằng
+    Ta có
     \begin{enumerate}
         \item[(i)] $||P_{C}(x)-P_{C}(y)||\le||x-y||$ với mọi $x$, $y\in\mathbb{R}^{m}$,
-        \item[(ii)] $\langle y-P_{C}(x)$, $x-P_{C}(x)\rangle\le0$ với mọi $x\in\mathbb{R}^{m}$, $y\in C$.
+        \item[(ii)] $\langle y-P_{C}(x), x-P_{C}(x)\rangle\le0$ với mọi $x\in\mathbb{R}^{m}$, $y\in C$.
     \end{enumerate}
 \end{proposition}
 
@@ -34,21 +34,23 @@ Giả sử rằng tập nghiệm của $(OP(f,C))$ là không rỗng. Trước h
 \begin{proposition}[Dennis và Schnabel \cite{dennis1983numerical}] \label{prop:2}
     Hàm khả vi $f$ là tựa lồi trên $C$ khi và chỉ khi
     \begin{equation}
-        f(y)\le f(x)\Rightarrow\langle\nabla f(x),y-x\rangle\le0.
+        f(y)\le f(x)\Rightarrow\langle\nabla f(x),y-x\rangle\le0. \nonumber
     \end{equation}
 \end{proposition}
 
 Đáng chú ý là ``$f$ là lồi'' $\Rightarrow$ ``$f$ là giả lồi'' $\Rightarrow$ ``$f$ là tựa lồi'' (xem Mangasarian \cite{mangasarian1965pseudoconvex}).
 
 \begin{proposition}[Dennis và Schnabel \cite{dennis1983numerical}] \label{prop:3}
-    Giả sử rằng $\nabla f$ là $L$-Lipschitz liên tục trên $C$. Với mọi $x$, $y\in C$, ta có
+    Giả sử rằng $\nabla f$ liên tục Lipschitz trên $C$. Với mọi $x$, $y\in C$, ta có
     \begin{equation} \label{eq:lipschitz}
-        |f(y)-f(x)-\langle\nabla f(x),y-x\rangle|\le\frac{L}{2}||y-x||^{2}.
+        |f(y)-f(x)-\langle\nabla f(x),y-x\rangle|\le\frac{L}{2}||y-x||^{2}. \nonumber
     \end{equation}
 \end{proposition}
 
 \begin{lemma}[Xu \cite{xu2002iterative}] \label{lemma:1}
     Cho $\{a_k\}$; $\{b_{k}\}\subset(0;\infty)$ là các dãy sao cho
-    $a_{k+1}\le a_{k}+b_{k}\forall k\ge0;$ $\sum_{k=0}^{\infty}b_{k}<\infty.$
+    \begin{equation}
+        a_{k+1}\le a_{k}+b_{k}\forall k\ge0; \sum_{k=0}^{\infty}b_{k}<\infty. \nonumber
+    \end{equation}
     Khi đó, tồn tại giới hạn $\lim_{k\rightarrow\infty}a_{k}=c\in\mathbb{R}$.
 \end{lemma}

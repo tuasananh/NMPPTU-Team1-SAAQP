@@ -32,14 +32,14 @@ class OptimizationResult:
 
 class GDA:
     """
-    This class implements a projected gradient descent method to minimize a scalar function
-    subject to bounds and constraints.
+    Projected gradient method with Armijo-type backtracking.
 
-    Args:
-        function (ScalarFunction): The objective function to minimize.
-        bounds (Bounds): The bounds on the variables.
-        constraints (Constraints): A list of constraints.
-        tol (float, optional): Tolerance for convergence. Defaults to 1e-9.
+    It solves:
+        minimize   f(x)
+        subject to x in C
+
+    with:
+        x_{k+1} = P_C(x_k - lambda_k * grad f(x_k))
     """
 
     def __init__(
@@ -68,51 +68,67 @@ class GDA:
         tol: Optional[float] = None,
         projector_max_iter: Optional[int] = None,
     ) -> OptimizationResult:
-        """
-        Solve the optimization problem using Projected Gradient Descent.
-
-        Args:
-            x0 (np.ndarray): Initial guess for the solution.
-            lambda_0 (float, optional): Initial step size. Defaults to 1.0.
-            sigma (float, optional): Parameter for the Armijo condition (sufficient decrease). Defaults to 0.1.
-            kappa (float, optional): Step size reduction factor. Defaults to 0.5.
-            max_iter (int, optional): Maximum number of iterations. Defaults to 1000.
-            stop_if_stationary (bool, optional): Whether to stop if the solution does not change. Defaults to True.
-
-        Returns:
-            OptimizationResult: The result of the optimization.
-        """
         tol = tol if tol is not None else self.tol
         projector_max_iter = (
             projector_max_iter
             if projector_max_iter is not None
             else self.projector_max_iter
         )
+
         projector = Projector(
             bounds=self.bounds,
             constraints=self.constraints,
             tol=tol,
             max_iter=projector_max_iter,
         )
+
         x_k = projector(x0)
-        lambda_k = lambda_0
         f_x_k = self.function(x_k)
-        xs = []
+        lambda_k = lambda_0
+
+        xs: List[np.ndarray] = []
+        converged = False
+
         for _ in range(max_iter):
-            xs.append(x_k)
-            grad_f_x_k = self.gradient(x_k)
-            x_k1 = projector(x_k - lambda_k * grad_f_x_k)
-            f_x_k1 = self.function(x_k1)
-            if f_x_k1 > f_x_k - sigma * np.dot(grad_f_x_k, x_k - x_k1):
-                lambda_k *= kappa
-            if stop_if_stationary and np.allclose(x_k, x_k1, atol=tol, rtol=tol):
-                break
+            xs.append(x_k.copy())
+            g = self.gradient(x_k)
+
+            lam = lambda_k
+            while True:
+                x_k1 = projector(x_k - lam * g)
+
+                # nếu bước chiếu không đổi gì nữa -> coi như hội tụ
+                if np.allclose(x_k, x_k1, atol=tol, rtol=tol):
+                    f_x_k1 = f_x_k
+                    converged = True
+                    break
+
+                f_x_k1 = self.function(x_k1)
+
+                if f_x_k1 <= f_x_k - sigma * np.dot(g, (x_k - x_k1)):
+                    break
+
+                lam *= kappa
+                if lam < 1e-20:
+                    x_k1 = x_k
+                    f_x_k1 = f_x_k
+                    converged = True
+                    break
+
+            lambda_k = lam
+
             x_k = x_k1
             f_x_k = f_x_k1
+
+            if converged and stop_if_stationary:
+                break
+
+        if len(xs) == 0 or not np.allclose(xs[-1], x_k, atol=tol, rtol=tol):
+            xs.append(x_k.copy())
 
         return OptimizationResult(
             x_opt=x_k,
             fun_opt=f_x_k,
-            success=len(xs) < max_iter,
+            success=converged,
             history=xs,
         )

@@ -28,6 +28,9 @@ class Projector:
         self.max_iter = max_iter
 
     def __call__(self, x: Vector) -> Vector:
+        if self.bounds is None and (self.constraints is None or len(self.constraints) == 0):
+            return x
+
         def objective(y: Vector) -> Scalar:
             d = y - x
             return 0.5 * np.dot(d, d)

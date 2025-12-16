@@ -47,7 +47,7 @@ initial_points = [
     np.array([ 1.0,  1.2, -5.8,  0.9]),
 ]
 if __name__ == "__main__":
-
+    print("===== Computational results for Example 2 (GDA) =====")
     for i, x0 in enumerate(initial_points):
         print(f"\n--- Run {i+1}, x0 = {x0} ---")
 

@@ -46,7 +46,7 @@ if __name__ == "__main__":
     result = solver.solve(
         x0=x0,
         step_size=0.05,     
-        max_iter=100,
+        max_iter=1000,
         tol=1e-8
     )
 

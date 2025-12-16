@@ -53,7 +53,7 @@ MAX_PLOT_ITER = 100
 
 results = []
 
-print("===== Computational results for Example 1 =====")
+print("===== GDA results for Example 1 =====")
 
 for i, x0 in enumerate(x0_list):
     solver = GDA(

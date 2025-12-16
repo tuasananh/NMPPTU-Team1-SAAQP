@@ -11,17 +11,11 @@ from algorithms.gd import GD
 from algorithms.utils import Projector
 
 
-# ==================================================
-# Objective function (Example 1)
-# ==================================================
 def f(x):
     x1, x2 = x
     return (x1**2 + x2**2 + 3.0) / (1.0 + 2.0*x1 + 8.0*x2)
 
 
-# ==================================================
-# Constraint
-# ==================================================
 def constraint_fun(x):
     x1, x2 = x
     return x1**2 + 2.0*x1*x2
@@ -40,9 +34,6 @@ projector = Projector(
     constraints=[nonlinear_constraint]
 )
 
-# ==================================================
-# Initial points (same as GDA)
-# ==================================================
 x0_list = [
     np.array([1.0, 2.0]),
     np.array([2.0, 0.8]),
@@ -55,7 +46,7 @@ labels = [
     r"$x^0 = (1.5,\,1.8)$",
 ]
 
-MAX_PLOT_ITER = 700
+MAX_PLOT_ITER = 900
 
 results = []
 
@@ -73,7 +64,7 @@ for i, x0 in enumerate(x0_list):
     result = solver.solve(
         x0=x0,
         step_size=0.05,   
-        max_iter=1000,
+        max_iter=2000,
         tol=1e-8
     )
 
@@ -86,9 +77,6 @@ for i, x0 in enumerate(x0_list):
     print("Iterations =", len(result.history))
 
 
-# ==================================================
-# Plot (FORMAT GIỐNG HỆT GDA)
-# ==================================================
 plt.figure(figsize=(7, 5))
 
 for result, label in zip(results, labels):

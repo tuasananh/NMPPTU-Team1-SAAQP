@@ -3,10 +3,10 @@ import os
 
 ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SRC_DIR = os.path.join(ROOT_DIR, "src")
-
 sys.path.insert(0, SRC_DIR)
 
 import numpy as np
+import autograd.numpy as anp   # 🔥 QUAN TRỌNG
 from scipy.optimize import Bounds, NonlinearConstraint, LinearConstraint
 
 from algorithms import GDA
@@ -15,10 +15,11 @@ from algorithms.utils import Projector
 
 # ==================================================
 # Objective function (Example 2 - paper)
+# NONSMOOTH + NON-LIPSCHITZ
 # ==================================================
-def f(x: np.ndarray) -> np.float64:
+def f(x):
     x1, x2, x3, x4 = x
-    numerator = np.exp(np.abs(x2 - 3.0)) - 30.0
+    numerator = anp.exp(anp.abs(x2 - 3.0)) - 30.0
     denominator = x1**2 + x3**2 + 2.0*x4**2 + 4.0
     return numerator / denominator
 
@@ -53,13 +54,12 @@ constraints = [
 
 
 # ==================================================
-# Bounds (no explicit bounds in paper → loose bounds)
+# Bounds (loose bounds as in paper)
 # ==================================================
 bounds = Bounds(
     [-10.0, -10.0, -10.0, -10.0],
     [10.0, 10.0, 10.0, 10.0]
 )
-
 
 projector = Projector(
     bounds=bounds,
@@ -72,7 +72,6 @@ projector = Projector(
 # ==================================================
 if __name__ == "__main__":
 
-    # Initial point (must satisfy constraints approximately)
     x0 = np.array([-0.5, 1.0, -0.5, 0.1])
 
     solver = GDA(

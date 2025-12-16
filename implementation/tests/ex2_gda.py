@@ -51,11 +51,16 @@ initial_points = [
     np.array([-0.5, 0.4, -0.5, 0.0]),
     np.array([-0.7, 0.0, -0.35, 0.75]),
     np.array([-1.05, 0.3, -0.75, 0.6]),
+    np.array([ 0.5,  1.8, -2.7,  0.5]),
+    np.array([-2.5,  0.2,  1.7,  0.3]),
+    np.array([ 1.0,  1.2, -5.8,  0.9]),
+    np.array([-3.0,  1.5,  2.0,  0.1]),
+    np.array([ 0.0,  0.1, -1.4,  1.0]),
 ]
 
-if __name__ == "__main__":
 
-    best_result = None
+
+if __name__ == "__main__":
 
     for i, x0 in enumerate(initial_points):
         print(f"\n--- Run {i+1}, x0 = {x0} ---")

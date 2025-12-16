@@ -10,19 +10,11 @@ from scipy.optimize import Bounds, NonlinearConstraint
 
 from algorithms.gd import GD
 from algorithms.utils import Projector
-
-
-# ==================================================
-# Objective function (Example 1)
-# ==================================================
 def f(x):
     x1, x2 = x
     return (x1**2 + x2**2 + 3.0) / (1.0 + 2.0*x1 + 8.0*x2)
 
 
-# ==================================================
-# Constraint
-# ==================================================
 def g_fun(x):
     x1, x2 = x
     return x1**2 + 2.0*x1*x2
@@ -53,7 +45,7 @@ if __name__ == "__main__":
 
     result = solver.solve(
         x0=x0,
-        step_size=0.05,     # 🔥 cố tình chọn nhỏ
+        step_size=0.05,     
         max_iter=100,
         tol=1e-8
     )

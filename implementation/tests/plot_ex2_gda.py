@@ -42,10 +42,32 @@ bounds = Bounds(
 projector = Projector(bounds=bounds, constraints=constraints)
 
 initial_points = [
-    np.array([-0.5, 0.4, -0.5, 0.0]),
-    np.array([-0.7, 0.0, -0.35, 0.75]),
-    np.array([-1.05, 0.3, -0.75, 0.6]),
+    np.array([ 0.5,  1.8, -2.7,  0.5]),
+    np.array([-2.5,  0.2,  1.7,  0.3]),
+    np.array([ 1.0,  1.2, -5.8,  0.9]),
 ]
+if __name__ == "__main__":
+
+    for i, x0 in enumerate(initial_points):
+        print(f"\n--- Run {i+1}, x0 = {x0} ---")
+
+        solver = GDA(
+            function=f,
+            projector=projector
+        )
+
+        result = solver.solve(
+            x0=x0,
+            lambda_0=0.1,     # 🔧 nhỏ hơn → ổn định hơn
+            sigma=0.05,
+            kappa=0.7,
+            max_iter=3000,
+            tol=1e-8
+        )
+
+        print("x* =", result.x_opt)
+        print("f(x*) =", result.fun_opt)
+        print("Iterations =", len(result.history))
 
 # ==================================================
 # Plot
@@ -60,7 +82,7 @@ for idx, x0 in enumerate(initial_points):
         lambda_0=0.1,
         sigma=0.05,
         kappa=0.7,
-        max_iter=30,
+        max_iter=300,
         tol=1e-8
     )
 

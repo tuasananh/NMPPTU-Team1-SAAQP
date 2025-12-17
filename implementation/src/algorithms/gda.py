@@ -1,21 +1,11 @@
 from typing import List, Optional
 import numpy as np
-from .utils import ScalarFunction, VectorFunction, Bounds, Constraints, Projector
 from autograd import grad
+
+from .utils import ScalarFunction, VectorFunction, Bounds, Constraints, Projector
 
 
 class OptimizationResult:
-    """
-    Result of the optimization process.
-
-    Attributes:
-        x_opt (np.ndarray): The optimal solution found.
-        fun_opt (np.float64): The value of the objective function at the optimal solution.
-        success (bool): Whether the optimization converged successfully.
-        message (str): Description of the cause of the termination.
-        history (List[np.ndarray]): List of solution vectors at each iteration.
-    """
-
     def __init__(
         self,
         x_opt: np.ndarray,
@@ -32,14 +22,15 @@ class OptimizationResult:
 
 class GDA:
     """
-    Projected gradient method with Armijo-type backtracking.
+    Notebook-style GDA (Example 5.2 style):
 
-    It solves:
-        minimize   f(x)
-        subject to x in C
+    For x_k, g_k = ∇f(x_k), lr = λ_k:
+      x_trial = P(x_k - lr * g_k)
+      e = <g_k, x_k - x_trial>
+      dl = f(x_trial) - f(x_k) + sigma * e
 
-    with:
-        x_{k+1} = P_C(x_k - lambda_k * grad f(x_k))
+      if dl > 0: lr <- kappa * lr   (shrink ONCE)
+      x_{k+1} = P(x_k - lr * g_k)   (step uses possibly-shrunk lr)
     """
 
     def __init__(
@@ -48,7 +39,7 @@ class GDA:
         bounds: Bounds,
         constraints: Constraints,
         tol: float = 1e-9,
-        projector_max_iter=1000,
+        projector_max_iter: int = 1000,
     ):
         self.function = function
         self.bounds = bounds
@@ -62,18 +53,14 @@ class GDA:
         x0: np.ndarray,
         lambda_0: float = 1.0,
         sigma: float = 0.1,
-        kappa: float = 0.5,
+        kappa: float = 0.75,
         max_iter: int = 1000,
         stop_if_stationary: bool = True,
         tol: Optional[float] = None,
         projector_max_iter: Optional[int] = None,
     ) -> OptimizationResult:
-        tol = tol if tol is not None else self.tol
-        projector_max_iter = (
-            projector_max_iter
-            if projector_max_iter is not None
-            else self.projector_max_iter
-        )
+        tol = self.tol if tol is None else tol
+        projector_max_iter = self.projector_max_iter if projector_max_iter is None else projector_max_iter
 
         projector = Projector(
             bounds=self.bounds,
@@ -83,52 +70,44 @@ class GDA:
         )
 
         x_k = projector(x0)
-        f_x_k = self.function(x_k)
-        lambda_k = lambda_0
+        f_k = self.function(x_k)
+        lam = float(lambda_0)
 
-        xs: List[np.ndarray] = []
+        xs: List[np.ndarray] = [x_k.copy()]
         converged = False
 
         for _ in range(max_iter):
-            xs.append(x_k.copy())
             g = self.gradient(x_k)
 
-            lam = lambda_k
-            while True:
-                x_k1 = projector(x_k - lam * g)
+            # 1) thử bước với lr hiện tại
+            x_trial = projector(x_k - lam * g)
+            f_trial = self.function(x_trial)
+            e = float(np.dot(g, (x_k - x_trial)))   # <g, x - x_new>
 
-                # nếu bước chiếu không đổi gì nữa -> coi như hội tụ
-                if np.allclose(x_k, x_k1, atol=tol, rtol=tol):
-                    f_x_k1 = f_x_k
-                    converged = True
-                    break
+            # f(x_new) - f(x) + sigma*e <= 0
+            dl = f_trial - f_k + sigma * e
 
-                f_x_k1 = self.function(x_k1)
+            # 2) nếu fail -> giảm lr 1 lần rồi bước bằng lr mới
+            if dl > 0:
+                lam = kappa * lam
+                x_trial = projector(x_k - lam * g)
+                f_trial = self.function(x_trial)
 
-                if f_x_k1 <= f_x_k - sigma * np.dot(g, (x_k - x_k1)):
-                    break
-
-                lam *= kappa
-                if lam < 1e-20:
-                    x_k1 = x_k
-                    f_x_k1 = f_x_k
-                    converged = True
-                    break
-
-            lambda_k = lam
-
-            x_k = x_k1
-            f_x_k = f_x_k1
-
-            if converged and stop_if_stationary:
+            # 3) cập nhật
+            if stop_if_stationary and np.allclose(x_trial, x_k, atol=tol, rtol=tol):
+                converged = True
+                x_k = x_trial
+                f_k = f_trial
+                xs.append(x_k.copy())
                 break
 
-        if len(xs) == 0 or not np.allclose(xs[-1], x_k, atol=tol, rtol=tol):
+            x_k = x_trial
+            f_k = f_trial
             xs.append(x_k.copy())
 
         return OptimizationResult(
             x_opt=x_k,
-            fun_opt=f_x_k,
+            fun_opt=f_k,
             success=converged,
             history=xs,
         )

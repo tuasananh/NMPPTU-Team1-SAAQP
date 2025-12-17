@@ -9,9 +9,12 @@
 \graphicspath{ {./images/} }
 \usepackage{float}
 \usepackage{amsmath,amssymb,amsthm}
+\usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
+\usepackage[labelfont=bf, font=small, labelsep=quad]{caption}
 \usepackage{url}
 \usepackage{xcolor} 
-\usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{calc}
 
 \newtheoremstyle{plain_custom}
   {} {} {\itshape} {} {\bfseries} {} { } {}
@@ -32,24 +35,66 @@
 
 \renewcommand{\proofname}{Chứng minh}
 
-\geometry{top=3cm,bottom=3cm,left=3cm,right=3cm}
+\geometry{top=2cm,bottom=2cm,left=3cm,right=2cm}
 
-\title{BÁO CÁO \\ Thuật toán tự thích nghi cho lập trình tựa lồi và ứng dụng trong học máy}
-
-\author{
-\begin{tabular}{c}
-Nguyễn Ngọc Tuấn Anh, Trần Tuấn Anh, Nguyễn Hữu Chính, \\
-Trần Mạnh Cường, Đỗ Hải Đăng, Bùi Tuấn Đạt,\\
-Nguyễn Hồng Đạt, Phạm Đình Minh Đức, Bùi Tiến Dũng\\
-Trần Huy Dương, Nguyễn Khắc Duy, 
-Nguyễn Hoàng Gia
-\end{tabular}
-}
-
-\date{}
 \begin{document}
 
-\maketitle
+\begin{titlepage}
+    \begin{tikzpicture}[overlay, remember picture]
+        \draw [line width=1pt] ($(current page.north west) + (2.5cm,-1.5cm)$) rectangle ($(current page.south east) + (-1.5cm,1.5cm)$);
+        \draw [line width=2pt] ($(current page.north west) + (2.6cm,-1.6cm)$) rectangle ($(current page.south east) + (-1.6cm,1.6cm)$);
+    \end{tikzpicture}
+
+    \begin{center}
+        {\fontsize{14pt}{16pt}\selectfont \textbf{ĐẠI HỌC BÁCH KHOA HÀ NỘI}} \\
+        {\fontsize{14pt}{16pt}\selectfont \textbf{TRƯỜNG CÔNG NGHỆ THÔNG TIN VÀ TRUYỀN THÔNG}} \\ 
+        \vspace{0.3cm}
+        \rule{8cm}{0.8pt} 
+
+        \vspace{1.5cm} 
+        \includegraphics[width=3cm]{images/logo_bk.png} 
+
+        \vspace{1.5cm}
+        {\fontsize{18pt}{22pt}\selectfont \textbf{BÁO CÁO BÀI TẬP LỚN}} \\
+        \vspace{0.3cm}
+        {\fontsize{20pt}{24pt}\selectfont \textbf{NHẬP MÔN CÁC PHƯƠNG PHÁP TỐI ƯU}} \\
+        
+        \vspace{0.6cm}
+        {\fontsize{16pt}{18pt}\selectfont \textbf{Thuật toán tự thích nghi cho lập trình tựa lồi\\và ứng dụng trong học máy}}
+
+        \vfill 
+
+        \begin{flushleft}
+            \hspace{1.5cm} 
+            {\fontsize{13pt}{15pt}\selectfont \textbf{Giảng viên hướng dẫn:}} \hspace{0.2cm}
+            \begin{tabular}[t]{l}
+                {\fontsize{13pt}{15pt}\selectfont \textbf{PGS. TS. Trịnh Ngọc Hải}} \\
+                {\fontsize{11pt}{13pt}\selectfont \text{(Khoa Toán - Tin)}}
+            \end{tabular}
+        \end{flushleft}
+        \vspace{1.2cm}
+
+        \begin{flushleft}
+            \hspace{1.5cm} {\fontsize{13pt}{15pt}\selectfont \textbf{Danh sách sinh viên thực hiện:}}
+            \vspace{0.4cm}           
+        \end{flushleft}
+
+        \vspace{-0.5cm} 
+        \renewcommand{\arraystretch}{1.4} 
+        \small
+        \begin{tabular}{l @{ -- } l l @{ -- } l}
+            Nguyễn Ngọc Tuấn Anh & 202400029 & Nguyễn Hồng Đạt      & 202416153 \\
+            Trần Tuấn Anh        & 202416124 & Phạm Đình Minh Đức  & 202400038 \\
+            Nguyễn Hữu Chính     & 202416143 & Bùi Tiến Dũng       & 202416167 \\
+            Trần Mạnh Cường      & 202416147 & Trần Huy Dương     & 20230025  \\
+            Đỗ Hải Đăng          & 202400035 & Nguyễn Khắc Duy    & 202400100 \\
+            Bùi Tuấn Đạt         & 202400096 & Nguyễn Hoàng Gia   & 202400040
+        \end{tabular}
+
+        \vfill 
+        {\fontsize{12pt}{14pt}\selectfont \textbf{HÀ NỘI, 12/2025}}
+    \end{center}
+\end{titlepage}
 
 \setcounter{chapter}{0}   
 

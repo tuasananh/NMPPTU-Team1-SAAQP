@@ -47,7 +47,7 @@ class Nesterov:
     def solve(
         self,
         x0: np.ndarray,
-        L: float,
+        step_size: float,
         max_iter: int = 1000,
         stop_if_stationary: bool = True,
         tol: Optional[float] = 1e-8,
@@ -74,9 +74,6 @@ class Nesterov:
                 - message: Text description of termination.
                 - history: List of iterates x_k.
         """
-        if L <= 0:
-            raise ValueError("L (Lipschitz constant) must be positive.")
-
         projector = self.projector
         # Project the initial point onto the feasible set
         x_k = projector(x0)
@@ -95,7 +92,7 @@ class Nesterov:
             grad_f_y_k = self.gradient(y_k)
 
             # Gradient step followed by projection
-            x_k1 = projector(y_k - (1.0 / L) * grad_f_y_k)
+            x_k1 = projector(y_k - step_size * grad_f_y_k)
             f_x_k1 = self.function(x_k1)
 
             # Nesterov acceleration update

@@ -2,6 +2,7 @@ from .gda import *
 from .nn import *
 from .utils import *
 from .gd import *
+from .gd_lipchitz import *
 from .sgda import *
 from .nesterov import *
 

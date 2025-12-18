@@ -25,6 +25,7 @@ class GD:
         projector = self.projector
         x_k = projector(x0)
         xs = []
+        success = False
         for _ in range(max_iter):
             xs.append(x_k.copy())
             grad_f_x_k = self.gradient(x_k)

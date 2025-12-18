@@ -1,2 +1,261 @@
 \section{Kết quả thực nghiệm}
 \label{sec:experiments}
+Trong phần này, các tác giả sử dụng hai ví dụ hiện có và hai ví dụ quy mô lớn với các kích thước thay đổi để xác nhận hiệu quả của phương pháp đề xuất. Các thí nghiệm ứng dụng trong học máy sẽ được thực hiện ở phần tiếp theo. Nhóm chúng tôi đã triển khai lại các ví dụ, mã nguồn có sẵn tại: \url{https://github.com/tuasananh/NMPPTU-Team1-SAAQP.git}.
+
+Tất cả các thử nghiệm được thực hiện bằng Python trên laptop với CPU Intel Core i9-13900HX (24 lõi với xung nhịp cơ bản 2.2GHz) và 32GB RAM. Tiêu chí dừng trong các trường hợp sau là ``số vòng lặp $\le$ \#Iter'' trong đó \#Iter là số vòng lặp tối đa. Ký hiệu $x^*$ là điểm giới hạn của dãy lặp $\{x_k\}$ và Time là thời gian CPU của thuật toán GDA khi sử dụng tiêu chí dừng.
+
+Các hàm mục tiêu và ràng buộc không lồi được minh họa trong Ví dụ 1 và 2 lấy từ \cite{liu2022one}. Ngoài ra, Ví dụ 2 phức tạp hơn Ví dụ 1 về dạng hàm. Việc thực hiện Ví dụ 3 với hàm mục tiêu lồi và số chiều $n$ thay đổi cho phép đánh giá phương pháp đề xuất so với Thuật toán GD. Ví dụ 4 được thực hiện với hàm mục tiêu giả lồi và một số giá trị $n$ để đánh giá phương pháp được các tác giả đề xuất so với Thuật toán RNN.
+
+Để so sánh với phương pháp neurodynamic trong \cite{liu2022one}, bài báo xét bài toán OP$(f, C)$ với tập ràng buộc được xác định bởi $C = \{x \in \mathbb{R}^n \mid g(x) \le 0,\ Ax = b\}$, trong đó $g(x) := (g_1(x), g_2(x), \dots, g_m(x))^\top$ và $g_i : \mathbb{R}^n \to \mathbb{R}$, $i = 1, \dots, m$ là các hàm tựa lồi khả vi, ma trận $A \in \mathbb{R}^{p \times n}$ và $b = (b_1, b_2, \dots, b_p)^\top \in \mathbb{R}^p$. Trong \cite{liu2022one}, các tác giả đã giới thiệu hàm
+\[
+\Psi(s) =
+\begin{cases}
+1, & s > 0, \\
+{[}0, 1{]}, & s = 0, \\
+0, & s < 0.
+\end{cases}
+\]
+và
+\[ P(x) = \sum_{i=1}^m \max \{0, g_i(x)\}. \]
+
+Thuật toán neurodynamic được thiết lập trong \cite{liu2022one}, sử dụng các mô hình mạng nơ-ron hồi quy (RNN) để giải bài toán \ref{eq:OP} dưới dạng bao hàm vi phân như sau:
+\[
+\frac{d}{dt} x(t) \in -c(x(t))\nabla f(x(t)) - \partial P(x(t)) - \partial \|Ax(t) - b\|_1 \quad (RNN)
+\]
+trong đó hệ số điều chỉnh $c(x(t))$ là
+\[
+c(x(t)) = \left\{ \prod_{i=1}^{m+p} c_i(t) \;\middle|\; c_i(t) \in 1 - \Psi(J_i(x(t))),\ i = 1, 2, \dots, m + p \right\}
+\]
+với
+\[
+J(x) = \bigl(g_1(x),\dots,g_m(x), |A_1x - b_1|,\dots,|A_px - b_p|\bigr)^\top,
+\]
+hạng tử subgradient của $P(x)$ là
+\[
+\partial P(x) =
+\begin{cases}
+0, & x \in \operatorname{int}(X) \\
+\sum_{i\in I_0(x)} {[}0,1{]} \nabla g_i(x), & x \in \operatorname{bd}(X) \\
+\sum_{i\in I_+(x)} \nabla g_i(x) + \sum_{i\in I_0(x)} {[}0,1{]} \nabla g_i(x), & x \notin X,
+\end{cases}
+\]
+với
+\[
+X = \{x : g_i(x) \le 0,\ i=1,2,\dots,m\},
+\]
+\[
+I_+(x) = \{i \in \{1,2,\dots,m\} : g_i(x) > 0\},
+\]
+\[
+I_0(x) = \{i \in \{1,2,\dots,m\} : g_i(x) = 0\},
+\]
+và hạng tử subgradient của $\|Ax - b\|_1$ là
+\[
+\partial \|Ax - b\|_1 = \sum_{i=1}^p \bigl(2\Psi(A_i x - b_i) - 1\bigr) A_i^\top,
+\]
+với $A_i \in \mathbb{R}^{1 \times n}$ $(i = 1, 2, \dots, p)$ là các vector dòng của ma trận $A$.
+
+\textbf{Ví dụ 1} Trước hết, xét một bài toán phi lồi đơn giản \ref{eq:OP}:
+\[
+\begin{array}{ll}
+\text{min} & f(x) = \dfrac{x_1^2 + x_2^2 + 3}{1 + 2x_1 + 8x_2} \\
+\text{v.đ.k} & x \in C,
+\end{array}
+\]
+trong đó $C = \{x = (x_1, x_2)^\top \in \mathbb{R}^2 \mid g_1(x) = -x_1^2 - 2x_1 x_2 \le -4;\ x_1, x_2 \ge 0\}$. Trong bài toán này, hàm mục tiêu $f$ là giả lồi trên tập khả thi lồi (Ví dụ 5.2 trong \cite{liu2022one}).
+
+Hình \hyperref[fig:hinh1]{1} minh họa các nghiệm tạm thời của phương pháp đề xuất với các nghiệm ban đầu khác nhau. Nó cho thấy các kết quả hội tụ đến nghiệm tối ưu $x^* = (0.8922,\  1.7957)$ của bài toán đã cho. Giá trị hàm mục tiêu do Thuật toán GDA tạo ra là 0.4094, tốt hơn giá trị tối ưu 0.4101 của mạng nơ-ron trong \cite{liu2022one}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{images/fig1.png}
+\caption{Kết quả tính toán cho Ví dụ 1.}
+\label{fig:hinh1}
+\end{figure}
+
+\textbf{Ví dụ 2} Xét bài toán tối ưu giả lồi không trơn với các ràng buộc bất đẳng thức không lồi sau (Ví dụ 5.1 trong \cite{liu2022one}):
+\[
+\begin{array}{ll}
+\text{minimize} & f(x) = \dfrac{e^{|x_2-3|} - 30}{x_1^2 + x_3^2 + 2x_4^2 + 4} \\
+\text{subject to} & g_1(x) = (x_1 + x_3)^3 + 2x_4^2 \le 10, \\
+& g_2(x) = (x_2 - 1)^2 \le 1, \\
+& 2x_1 + 4x_2 + x_3 = -1,
+\end{array}
+\]
+trong đó $x = (x_1, x_2, x_3, x_4)^\top \in \mathbb{R}^4$. Hàm mục tiêu $f(x)$ là không trơn giả lồi trên miền khả thi $C$, và ràng buộc bất đẳng thức $g_1$ là liên tục giả lồi trên $C$, nhưng không giả lồi (xem \cite{liu2022one}). Dễ thấy rằng $x_2 \ne 3$ với mọi $x \in C$. Do đó, vector gradient của $|x_2 - 3|$ là $(x_2 - 3)/|x_2 - 3|$ với mọi $x \in C$. Từ đó, chúng ta có thể thiết lập vector gradient của $f(x)$ tại điểm $x \in C$ dùng trong thuật toán. Hình \hyperref[fig:hinh2]{2} cho thấy Thuật toán GDA hội tụ đến nghiệm tối ưu $x^* = (-1.0649,\  0.4160,\  -0.5343,\  0.0002)^\top$ với giá trị tối ưu $-3.0908$, tốt hơn giá trị tối ưu $-3.0849$ của mô hình mạng nơ-ron trong \cite{liu2022one}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{images/fig2.png}
+\caption{Kết quả tính toán cho Ví dụ 2.}
+\label{fig:hinh2}
+\end{figure}
+
+\textbf{Ví dụ 3} Đặt $e := (1, \dots, n) \in \mathbb{R}^n$ là vector, $\alpha > 0$ và $\beta > 0$ là các hằng số thỏa mãn điều kiện tham số $2\alpha > 3\beta^{3/2}\sqrt{n}$. Xét bài toán OP$(f, C)$ (Ví dụ 4.5 trong \cite{ferreira2022frankwolfe}) với hàm tương ứng
+\[
+f(x) := a^\top x + \alpha x^\top x + \frac{\beta}{\sqrt{1 + \beta x^\top x}} e^\top x,
+\]
+với $a \in \mathbb{R}^n$ là lồi và ràng buộc không lồi được cho bởi
+\[
+C := \{ x \in \mathbb{R}^n_+ : 1 \le x_1 \dots x_n \}.
+\]
+
+Ví dụ này được thực hiện để so sánh Thuật toán GDA với thuật toán gradient descent gốc (GD). Thí nghiệm được thực hiện với hằng số được chọn ngẫu nhiên $\beta = 0.741271$, $\alpha = 3\beta^{3/2}\sqrt{n} + 1$ thỏa mãn điều kiện tham số và hệ số Lipschitz $L = (4\beta^{3/2}\sqrt{n} + 3\alpha)$ được gợi ý trong \cite{ferreira2022frankwolfe}. Cỡ bước của Thuật toán GD là $\lambda = 1/L$, và cỡ bước ban đầu của Thuật toán GDA là $\lambda_0 = 5/L$.
+
+Hai kết quả thực nghiệm dưới đây cho thấy rằng với cỡ bước được chọn dựa theo hằng số Lipschitz $L$, cả hai thuật toán đều hội tụ rất nhanh (không quá 20 vòng lặp). Nguyên nhân cụ thể dẫn đến tốc độ hội tụ này vẫn là một vấn đề mở cần được nghiên cứu thêm.
+
+Kết quả chi tiết với hệ số nhân \texttt{gda\_multiplier} $= 5.0$ (cỡ bước ban đầu của GDA gấp 5 lần so với GD) được trình bày tại Bảng \ref{tab:adaptive_5}.
+
+\begin{table}[H]
+\caption{Kết quả cho Ví dụ 3 với cỡ bước tự thích nghi (gda\_multiplier = 5.0)}
+\label{tab:adaptive_5}
+\centering
+\setlength{\tabcolsep}{3pt} 
+\small 
+\begin{tabular}{l|lll|lll}
+\hline
+$n$ 
+& \multicolumn{3}{c|}{Thuật toán GDA (đề xuất)} 
+& \multicolumn{3}{c}{Thuật toán GD} \\
+ & $f(x^*)$ & \#Iter & Time (ms)
+ & $f(x^*)$ & \#Iter & Time (ms) \\
+\hline
+10    & 80.0806      & 18 & 5.19  & 80.0806      & 19 & 5.34 \\
+20    & 219.5903     & 17 & 4.45  & 219.5903     & 19 & 4.82 \\
+50    & 852.4965     & 17 & 5.09  & 852.4965     & 19 & 3.76 \\
+100   & 2394.3380    & 17 & 2.68  & 2394.3380    & 20 & 9.16 \\
+200   & 6732.2122    & 17 & 8.96  & 6732.2122    & 20 & 8.92 \\
+500   & 26429.0556   & 17 & 11.01 & 26429.0556   & 20 & 3.30 \\
+1000  & 74531.2658   & 17 & 4.31  & 74531.2658   & 20 & 8.61 \\
+2000  & 210371.4228  & 17 & 6.40  & 210371.4228  & 20 & 7.23 \\
+3000  & 386136.1503  & 17 & 7.88  & 386136.1503  & 20 & 7.29 \\
+10000 & 2345979.1282 & 17 & 20.03 & 2345979.1282 & 20 & 19.42 \\
+\hline
+\end{tabular}
+\end{table}
+
+Với \texttt{gda\_multiplier} $= 2$, nghĩa là cỡ bước ban đầu của GDA gấp đôi so với GD, thuật toán GDA thể hiện hiệu năng tốt hơn hẳn (xem Bảng \ref{tab:adaptive_2}). Điều này có thể được giải thích như sau: Thuật toán hội tụ nhanh do việc chọn cỡ bước dựa theo $L$ đã là một lựa chọn rất tốt. Nếu tăng cỡ bước ban đầu lên cao, thuật toán sẽ tốn một vài bước lặp để điều chỉnh cỡ bước trở về mức lý tưởng. Việc chọn cỡ bước gấp đôi GD giúp đảm bảo cân bằng giữa tốc độ hội tụ và tính an toàn.
+
+\begin{table}[H]
+\caption{Kết quả cho Ví dụ 3 với cỡ bước tự thích nghi (gda\_multiplier = 2.0)}
+\label{tab:adaptive_2}
+\centering
+\setlength{\tabcolsep}{3pt}
+\small
+\begin{tabular}{l|lll|lll}
+\hline
+$n$ 
+& \multicolumn{3}{c|}{Thuật toán GDA (đề xuất)} 
+& \multicolumn{3}{c}{Thuật toán GD} \\
+ & $f(x^*)$ & \#Iter & Time (ms)
+ & $f(x^*)$ & \#Iter & Time (ms) \\
+\hline
+10    & 80.0806      & 8 & 5.17  & 80.0806      & 19 & 10.43 \\
+20    & 219.5903     & 8 & 3.69  & 219.5903     & 19 & 5.55 \\
+50    & 852.4965     & 8 & 5.49  & 852.4965     & 19 & 12.07 \\
+100   & 2394.3380    & 8 & 2.47  & 2394.3380    & 20 & 9.48 \\
+200   & 6732.2122    & 8 & 0.00  & 6732.2122    & 20 & 4.95 \\
+500   & 26429.0556   & 9 & 5.89  & 26429.0556   & 20 & 4.68 \\
+1000  & 74531.2658   & 9 & 2.90  & 74531.2658   & 20 & 5.96 \\
+2000  & 210371.4228  & 9 & 1.00  & 210371.4228  & 20 & 0.00 \\
+3000  & 386136.1503  & 9 & 12.05 & 386136.1503  & 20 & 8.28 \\
+10000 & 2345979.1282 & 9 & 8.66  & 2345979.1282 & 20 & 19.54 \\
+\hline
+\end{tabular}
+\end{table}
+
+Trong trường hợp cỡ bước cố định, kết quả nhận được tương đồng với các công bố trong bài báo \cite{thang2024saaqp}. Vì cỡ bước chưa phải là lý tưởng, thuật toán GD tiêu tốn nhiều thời gian để tìm được nghiệm tối ưu.
+
+Tương tự nhận xét ở trên, với cỡ bước ban đầu quá lớn (gấp 5 lần GD), thuật toán GDA mất nhiều thời gian để tìm lại cỡ bước lý tưởng. Do đó, với $n \le 2000$, thuật toán thể hiện kém hơn GD (Bảng \ref{tab:fixed_5}). Tuy nhiên, với $n$ lớn hơn, thuật toán đã giảm đáng kể thời gian tìm nghiệm do số vòng lặp để tìm cỡ bước lý tưởng chỉ chiếm một phần nhỏ trong tổng số vòng lặp.
+
+\begin{table}[H]
+\caption{Kết quả cho Ví dụ 3 với cỡ bước cố định (gda\_multiplier = 5.0, step\_size = 0.1)}
+\label{tab:fixed_5}
+\centering
+\setlength{\tabcolsep}{3pt}
+\small
+\begin{tabular}{l|lll|lll}
+\hline
+$n$ 
+& \multicolumn{3}{c|}{Thuật toán GDA (đề xuất)} 
+& \multicolumn{3}{c}{Thuật toán GD} \\
+ & $f(x^*)$ & \#Iter & Time (ms)
+ & $f(x^*)$ & \#Iter & Time (ms) \\
+\hline
+10    & 80.0806      & 46  & 15.07  & 80.0806      & 8   & 0.00 \\
+20    & 219.5903     & 58  & 17.90  & 219.5903     & 13  & 2.62 \\
+50    & 852.4965     & 90  & 21.99  & 852.4965     & 21  & 5.73 \\
+100   & 2394.3380    & 111 & 30.87  & 2394.3380    & 29  & 8.03 \\
+200   & 6732.2122    & 100 & 27.75  & 6732.2122    & 41  & 11.73 \\
+500   & 26429.0556   & 130 & 40.58  & 26429.0556   & 66  & 20.92 \\
+1000  & 74531.2658   & 112 & 44.95  & 74531.2658   & 92  & 34.48 \\
+2000  & 210371.4228  & 138 & 61.49  & 210371.4228  & 129 & 57.46 \\
+3000  & 386136.1503  & 92  & 50.98  & 386136.1503  & 161 & 94.66 \\
+10000 & 2345979.1282 & 101 & 137.50 & 2345979.1282 & 293 & 426.79 \\
+\hline
+\end{tabular}
+\end{table}
+
+Thật vậy, khi GDA xuất phát với cỡ bước gấp 2 lần GD, thuật toán thể hiện tốt hơn rõ rệt, đặc biệt với $n \ge 2000$. Thuật toán GDA chỉ thực sự mạnh hơn đáng kể so với GD khi $n$ đủ lớn trong trường hợp cỡ bước cố định (Bảng \ref{tab:fixed_2}).
+
+\begin{table}[H]
+\caption{Kết quả cho Ví dụ 3 với cỡ bước cố định (gda\_multiplier = 2.0, step\_size = 0.1)}
+\label{tab:fixed_2}
+\centering
+\setlength{\tabcolsep}{3pt}
+\small
+\begin{tabular}{l|lll|lll}
+\hline
+$n$ 
+& \multicolumn{3}{c|}{Thuật toán GDA (đề xuất)} 
+& \multicolumn{3}{c}{Thuật toán GD} \\
+ & $f(x^*)$ & \#Iter & Time (ms)
+ & $f(x^*)$ & \#Iter & Time (ms) \\
+\hline
+10    & 80.0806      & 19  & 8.71   & 80.0806      & 8   & 0.00 \\
+20    & 219.5903     & 26  & 8.13   & 219.5903     & 13  & 3.47 \\
+50    & 852.4965     & 41  & 11.98  & 852.4965     & 21  & 6.46 \\
+100   & 2394.3380    & 55  & 9.68   & 2394.3380    & 29  & 11.73 \\
+200   & 6732.2122    & 78  & 19.77  & 6732.2122    & 41  & 10.18 \\
+500   & 26429.0556   & 109 & 31.90  & 26429.0556   & 66  & 22.56 \\
+1000  & 74531.2658   & 103 & 32.23  & 74531.2658   & 92  & 36.17 \\
+2000  & 210371.4228  & 114 & 51.38  & 210371.4228  & 129 & 65.05 \\
+3000  & 386136.1503  & 130 & 84.40  & 386136.1503  & 161 & 95.98 \\
+10000 & 2345979.1282 & 125 & 172.49 & 2345979.1282 & 293 & 400.85 \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Ví dụ 4} Để so sánh Thuật toán GDA với Thuật toán RNN trong \cite{liu2022one}, xét bài toán \ref{eq:OP} với hàm mục tiêu
+\[
+f(x) = -\exp\left(-\sum_{i=1}^{n} \frac{x_i^2}{\varrho_i^2}\right)
+\]
+là giả lồi trên tập ràng buộc lồi
+\[
+C := \{Ax = b,\ g(x) \le 0\},
+\]
+trong đó $x \in \mathbb{R}^n$, vector tham số $\varrho = (\varrho_1, \varrho_2, \dots, \varrho_n)^\top$ với $\varrho_i > 0$, ma trận $A = (a_1, a_2, \dots, a_n) \in \mathbb{R}^{1 \times n}$ với $a_i = 1$ khi $1 \le i \le n/2$ và $a_i = 3$ khi $n/2 < i \le n$, và số $b = 16$. Các ràng buộc bất đẳng thức là
+\[
+g_i(x) = x_{10\cdot(i-1)+1}^2 + x_{10\cdot(i-1)+2}^2 + \cdots + x_{10\cdot(i-1)+10}^2 - 20,
+\]
+với $i = 1, 2, \dots, n/10$. Bảng~\ref{tab:ex4} trình bày kết quả tính toán của Thuật toán GDA và RNN. Lưu ý rằng hàm $-\ln(-z)$ là đơn điệu tăng với $z \in \mathbb{R}$, $z < 0$. Do đó, để so sánh giá trị tối ưu xấp xỉ qua các vòng lặp, các tác giả tính $-\ln(-f(x^*))$ thay vì $f(x^*)$, với nghiệm tối ưu xấp xỉ $x^*$. Với mỗi $n$, bài báo \cite{thang2024saaqp} giải bài toán \ref{eq:OP} để tìm giá trị $-\ln(-f(x^*))$, số vòng lặp (\#Iter) để dừng thuật toán, và thời gian tính toán (Time) tính bằng giây. Kết quả tính toán cho thấy thuật toán đề xuất vượt trội hơn Thuật toán RNN trong các kịch bản thử nghiệm cả về giá trị tối ưu và thời gian tính toán, đặc biệt khi chiều lớn.
+
+\begin{table}[htbp]
+\caption{Kết quả tính toán cho Ví dụ 4}
+\label{tab:ex4}
+\centering
+\begin{tabular}{l|lll|lll}
+\hline
+$n$ & \multicolumn{3}{c|}{Thuật toán GDA (đề xuất)} & \multicolumn{3}{c}{Thuật toán RNN} \\
+ & $-\ln(-f(x^*))$ & \#Iter & Time & $-\ln(-f(x^*))$ & \#Iter & Time \\
+\hline
+10  & 5.1200  & 10 & 0.3 & 5.1506  & 1000 & 256 \\
+20  & 2.5600  & 10 & 0.8 & 2.5673  & 1000 & 503 \\
+50  & 1.0240  & 10 & 2   & 1.0299  & 1000 & 832 \\
+100 & 0.5125  & 10 & 7   & 13.7067 & 1000 & 1420 \\
+300 & 15.7154 & 10 & 84  & 39.3080 & 1000 & 3292 \\
+400 & 20.9834 & 10 & 163 & 57.6837 & 1000 & 4426 \\
+600 & 29.0228 & 10 & 371 & 83.6265 & 1000 & 6788 \\
+\hline
+\end{tabular}
+\end{table}

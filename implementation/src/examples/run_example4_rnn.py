@@ -21,7 +21,9 @@ def main():
 
     for n in ns:
         prob = make_example4(n=n, q=np.ones(n))
-        x0 = rng.standard_normal(n)
+        x0 = 0.1 * rng.standard_normal(n)   # scale nhỏ để tránh vanishing gradient
+        x0 = prob["project"](x0)            # đưa về feasible để RNN có c(x)=1 ngay
+
 
         grad_f = _get_grad_f(prob)
 

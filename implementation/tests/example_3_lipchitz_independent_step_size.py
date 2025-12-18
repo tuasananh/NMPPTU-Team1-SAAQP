@@ -77,11 +77,11 @@ def run_experiment():
 
     print(f"{'-'*110}")
     print(f"{'n':<5} | {'Algorithm GDA (proposed)':<45} | {'Algorithm GD':<45}")
-    print(f"{'':<5} | {'f(x*)':<18} {'#Iter':<10} {'Time':<15} | {'f(x*)':<18} {'#Iter':<10} {'Time':<15}")
+    print(f"{'':<5} | {'f(x*)':<12} {'#Iter':<10} {'Time':<15} | {'f(x*)':<12} {'#Iter':<10} {'Time':<15}")
     print(f"{'-'*110}")
     # n_values = [10, 20, 50, 100, 200, 500]
-    np.random.seed(2139)
-    n_values = [10, 20, 50, 100, 200, 500, 1000, 2000, 3000, 10000]
+    np.random.seed(42)
+    n_values = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000]
 
     for n in n_values:
 
@@ -89,8 +89,9 @@ def run_experiment():
         a = np.random.uniform(1e-12, 1.0, size=n)    
         beta = 0.741271
         alpha = 3 * (beta**1.5) * np.sqrt(n + 1)
-        L = 4 * (beta**1.5) * np.sqrt(n) + 3 * alpha
-
+        # L = 4 * (beta**1.5) * np.sqrt(n) + 3 * alpha
+        # L = 10
+        
         def objective(x):
             xt_x = anp.dot(x, x)
             at_x = anp.dot(a, x)
@@ -112,12 +113,12 @@ def run_experiment():
         start_time = time.time()
         res_gda = gda_solver.solve(
             x0=x0,
-            lambda_0=5.0/L,
+            lambda_0=0.5,
             sigma=0.1,
             kappa=0.5,
             max_iter=1000,
             stop_if_stationary=True,
-            tol=1e-6,
+            tol=1e-9,
         )
 
         time_gda = time.time() - start_time
@@ -125,15 +126,15 @@ def run_experiment():
         start_time = time.time()
         res_gd = gd_solver.solve(
             x0=x0,
-            step_size=1.0/L,
+            step_size=0.1,
             max_iter=1000,
             stop_if_stationary=True,
-            tol=1e-6,
+            tol=1e-9,
         )
         time_gd = time.time() - start_time
         print(f"{n:<5} | "
-              f"{res_gda.fun_opt:<18.4f} {len(res_gda.history):<10} {time_gda:<15.4f} | "
-              f"{res_gd.fun_opt:<18.4f} {len(res_gd.history):<10} {time_gd:<15.4f}")
+              f"{res_gda.fun_opt:<12.4f} {len(res_gda.history):<10} {time_gda:<15.4f} | "
+              f"{res_gd.fun_opt:<12.4f} {len(res_gd.history):<10} {time_gd:<15.4f}")
     print(f"{'-'*110}")
 
 if __name__ == "__main__":

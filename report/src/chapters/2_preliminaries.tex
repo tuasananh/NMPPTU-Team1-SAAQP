@@ -1,14 +1,14 @@
-\section{Cơ sở lí thuyết}
+\section{Cơ sở lý thuyết}
 \label{sec:preliminaries}
 
-Trong toàn bộ bài báo \cite{thang2024saaqp}, ta giả định rằng $C$ là một tập khác rỗng, đóng và lồi trong $\mathbb{R}^{m}$, $f:\mathbb{R}^{m}\rightarrow \mathbb{R}$ là một hàm khả vi trên một tập mở chứa $C$, ánh xạ $\nabla f$ là  liên tục Lipschitz, tức là tồn tại một hằng số $L>0$ sao cho $||\nabla f(x)-\nabla f(y)||\le L||x-y||$ với mọi $x$, $y\in C$. Ta xem xét bài toán tối ưu hóa:
+Trong toàn bộ bài báo \cite{thang2024saaqp}, ta giả định rằng $C$ là một tập khác rỗng, đóng và lồi trong $\mathbb{R}^{m}$, $f:\mathbb{R}^{m}\rightarrow \mathbb{R}$ là một hàm khả vi trên một tập mở chứa $C$, ánh xạ $\nabla f$ liên tục Lipschitz, tức là tồn tại một hằng số $L>0$ sao cho $||\nabla f(x)-\nabla f(y)||\le L||x-y||$ với mọi $x$, $y\in C$. Ta xét bài toán tối ưu:
 \begin{equation} \label{eq:OP}
     \min_{x\in C}f(x). \tag{OP(f, C)}
 \end{equation}
 
 Giả sử rằng tập nghiệm của \ref{eq:OP} là không rỗng. Trước hết, ta nhắc lại một số định nghĩa và kết quả cơ bản sẽ được sử dụng trong phần tiếp theo của bài báo \cite{thang2024saaqp}. Chứng minh chi tiết được trình bày trong \cite{bauschke2011convex} và \cite{rockafellar1970convex}. 
 
-Với $x\in\mathbb{R}^{m}$ ký hiệu bởi $P_{C}(x)$ là hình chiếu của $x$ lên $C$, tức là:
+Với $x\in\mathbb{R}^{m}$, ký hiệu $P_{C}(x)$ là hình chiếu của $x$ lên $C$, tức là:
 \begin{equation}
     P_{C}(x):=\text{argmin}\{||z-x||:z\in C\}. \nonumber
 \end{equation}

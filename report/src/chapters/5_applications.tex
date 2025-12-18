@@ -1,27 +1,24 @@
 \section{Ứng dụng trong học máy}
 \label{sec:applications}
 
-Phương pháp được đề xuất, giống như thuật toán GD, có nhiều ứng dụng trong học máy. Trong báo cáo này, nhóm chúng tôi trình bày lại ba ứng dụng tiêu biểu được trình bày trong bài báo, bao gồm lựa chọn đặc trưng có giám sát (\textit{supervised feature selection}), hồi quy (\textit{regression}) và phân loại (\textit{classification}), để chứng minh độ chính xác và hiệu quả tính toán so với các phương pháp thay thế khác.
+Phương pháp được đề xuất, giống như thuật toán GD, có nhiều ứng dụng trong học máy. Trong báo cáo này, nhóm chúng tôi trình bày và tái triển khai ba thực nghiệm ứng với ba ứng dụng tiêu biểu được trình bày trong bài báo \cite{thang2024saaqp}, bao gồm lựa chọn đặc trưng có giám sát (\textit{supervised feature selection}), hồi quy (\textit{regression}) và phân loại (\textit{classification}), để chứng minh độ chính xác và hiệu quả tính toán so với các phương pháp thay thế khác.
 
-% --- Phần 2: Chi tiết kỹ thuật (Ảnh 2) ---
-% Đoạn này nối tiếp đoạn trên, giải thích chi tiết 3 ứng dụng vừa liệt kê.
-
-Đầu tiên, bài toán lựa chọn đặc trưng có thể được mô hình hóa như một bài toán cực tiểu hóa của một hàm phân thức giả lồi trên một tập lồi, đây là một lớp con của Bài toán \textcolor{blue}{OP$(f, C)$}. Bài toán này được sử dụng để so sánh phương pháp tiếp cận được đề xuất với các phương pháp thần kinh động (\textit{neurodynamic approaches}). 
+Đầu tiên, bài toán lựa chọn đặc trưng có thể được mô hình hóa như một bài toán cực tiểu hóa một hàm phân thức giả lồi trên một tập lồi, đây là một lớp con của Bài toán \ref{eq:OP}. Bài toán này được sử dụng để so sánh phương pháp tiếp cận được đề xuất với các phương pháp thần kinh động (\textit{neurodynamic approaches}). 
 
 Thứ hai, vì bài toán hồi quy logistic đa biến là một bài toán quy hoạch lồi, nên thuật toán GDA và các biến thể có sẵn của thuật toán GD có thể được sử dụng để giải nó. 
 
-Cuối cùng, một mô hình mạng nơ-ron cho bài toán phân loại ảnh cũng giống như một bài toán quy hoạch với hàm mục tiêu không lồi cũng không tựa lồi. Để huấn luyện mô hình này, tác giả bài báo sử dụng biến thể ngẫu nhiên của phương pháp GDA (Thuật toán SGDA) như một kỹ thuật heuristic. Mặc dù sự hội tụ của thuật toán không thể được đảm bảo như trong các trường hợp hàm mục tiêu giả lồi và tựa lồi, nghiên cứu lý thuyết đã chỉ ra rằng nếu dãy điểm có một điểm giới hạn, nó sẽ hội tụ về một điểm dừng của bài toán (xem Định lý 1). Các thực nghiệm tính toán chỉ ra rằng phương pháp được đề xuất vượt trội hơn so với các phương pháp thần kinh động và gradient descent hiện có.
+Cuối cùng, một mô hình mạng nơ-ron cho bài toán phân loại ảnh cũng giống như một bài toán quy hoạch với hàm mục tiêu không lồi cũng không tựa lồi. Để huấn luyện mô hình này, các tác giả sử dụng biến thể ngẫu nhiên của phương pháp GDA (Thuật toán SGDA) như một kỹ thuật heuristic. Mặc dù sự hội tụ của thuật toán không thể được đảm bảo như trong các trường hợp hàm mục tiêu giả lồi và tựa lồi, nghiên cứu lý thuyết đã chỉ ra rằng nếu dãy điểm có một điểm giới hạn, nó sẽ hội tụ về một điểm dừng của bài toán (xem Định lý \ref{thm:convergence}). Các thực nghiệm tính toán chỉ ra rằng phương pháp được đề xuất vượt trội hơn so với các phương pháp thần kinh động và gradient descent hiện có.
 
 \subsection*{5.1 Chọn đặc trưng có giám sát}
 
-Bài toán chọn đặc trưng được thực hiện trên tập dữ liệu với $p$ đặc trưng $\mathcal{F} = \{F_1, \dots, F_p\}$ và gồm $n$ mẫu $\{(x_i, y_i) \mid i = 1, \dots, n\}$, trong đó $x_i = (x_{i1}, \dots, x_{ip})^T$ là vectơ đặc trưng $p$ chiều của mẫu thứ $i$ và $y_i \in \{1, \dots, m\}$ đại diện cho các nhãn tương ứng chỉ ra các lớp hoặc giá trị mục tiêu. Trong nghiên cứu của Wang và cộng sự (2021)\cite{wang2021neurodynamic}, một tập con tối ưu gồm $k$ đặc trưng $\{F_1, \dots, F_k\} \subseteq \mathcal{F}$ được chọn với độ dư thừa thấp nhất và độ liên quan cao nhất đến lớp mục tiêu $y$. Độ dư thừa của đặc trưng được đặc trưng bởi một ma trận bán xác định dương $Q$. Khi đó, mục tiêu đầu tiên là cực tiểu hóa hàm bậc hai lồi $w^T Q w$. Độ liên quan của đặc trưng được đo lường bởi $\rho^T w$, trong đó $\rho = (\rho_1, \dots, \rho_p)^T$ là một vectơ tham số liên quan. Do đó, mục tiêu thứ hai là cực đại hóa hàm tuyến tính $\rho^T w$. Kết hợp hai mục tiêu này, ta suy ra bài toán tương đương như sau:
+Bài toán chọn đặc trưng được thực hiện trên tập dữ liệu với tập gồm $p$ đặc trưng $\mathcal{F} = \{F_1, \dots, F_p\}$ và tập gồm $n$ mẫu $\{(x_i, y_i) \mid i = 1, \dots, n\}$, trong đó $x_i = (x_{i1}, \dots, x_{ip})^T$ là vectơ đặc trưng $p$ chiều của mẫu thứ $i$ và $y_i \in \{1, \dots, m\}$ đại diện cho các nhãn tương ứng chỉ ra các lớp hoặc giá trị mục tiêu. Trong \cite{wang2021neurodynamic}, một tập con tối ưu gồm $k$ đặc trưng $\{F_1, \dots, F_k\} \subseteq \mathcal{F}$ được chọn với độ dư thừa thấp nhất và độ liên quan cao nhất đến lớp mục tiêu $y$. Độ dư thừa của đặc trưng được đặc trưng bởi một ma trận bán xác định dương $Q$. Khi đó, mục tiêu đầu tiên là cực tiểu hóa hàm bậc hai lồi $w^T Q w$. Độ liên quan của đặc trưng được đo lường bởi $\rho^T w$, trong đó $\rho = (\rho_1, \dots, \rho_p)^T$ là một vectơ tham số liên quan. Do đó, mục tiêu thứ hai là cực đại hóa hàm tuyến tính $\rho^T w$. Kết hợp hai mục tiêu này, ta suy ra bài toán tương đương như sau:
 
 \begin{equation}
 \label{bai toan : 14}
 \begin{aligned}
-& \underset{}{\text{Cực tiểu hoá}}
+& \underset{}{\text{min}}
 & & \frac{w^T Q w}{\rho^T w} \\
-& \text{với điều kiện}
+& \text{v.đ.k}
 & & e^T w = 1 \\
 & & & w \geq 0,
 \end{aligned}
@@ -29,18 +26,16 @@ Bài toán chọn đặc trưng được thực hiện trên tập dữ liệu v
 \end{equation}
 trong đó $w = (w_1, \dots, w_p)^T$ là vectơ điểm số đặc trưng cần xác định. Vì hàm mục tiêu của bài toán (\ref{bai toan : 14}) có dạng phân thức, trong đó tử là một hàm lồi và mẫu là một hàm tuyến tính dương, nên nó là giả lồi trên tập ràng buộc. Do đó, chúng ta có thể giải bài toán (\ref{bai toan : 14}) bằng Thuật toán GDA.
 
-Trong thực nghiệm, chúng tôi triển khai các thuật toán với tập dữ liệu Parkinsons, bao gồm 23 đặc trưng và 197 mẫu, được tải xuống tại \url{https://archive.ics.uci.edu/ml/datasets/parkinsons}. Ma trận hệ số tương đồng $Q$ được xác định bởi $Q = \delta I_p + S$ (Wang và cộng sự (2021)\cite{wang2021neurodynamic}), trong đó  $S = (s_{ij})$ là ma trận $p \times p$ với:
+Trong thực nghiệm, bài báo \cite{thang2024saaqp} triển khai các thuật toán với tập dữ liệu Parkinsons, bao gồm 23 đặc trưng và 197 mẫu, được tải xuống tại \url{https://archive.ics.uci.edu/ml/datasets/parkinsons}. Ma trận hệ số tương đồng $Q$ được xác định bởi $Q = \delta I_p + S$ \cite{wang2021neurodynamic}, trong đó  $S = (s_{ij})$ là ma trận $p \times p$ với:
 
 $$
 s_{ij} = \max \left\{ 0, \frac{I(F_i; F_j; y)}{H(F_i) + H(F_j)} \right\},
 $$
 entropy thông tin của một vectơ biến ngẫu nhiên $\hat{X}$ là:
-
 $$
 H(\hat{X}) = -\sum_{\hat{x} \in \hat{X}} p(\hat{x}) \log p(\hat{x}),
 $$
 đa thông tin (multi-information) của ba vectơ ngẫu nhiên $\hat{X}, \hat{Y}, \hat{Z}$ là $I(\hat{X}; \hat{Y}; \hat{Z}) = I(\hat{X}; \hat{Y}) - I(\hat{X}; \hat{Y} \mid \hat{Z})$ với thông tin tương hỗ của hai vectơ ngẫu nhiên $\hat{X}, \hat{Y}$ được định nghĩa bởi:
-
 $$
 I(\hat{X}; \hat{Y}) = \sum_{\hat{x} \in \hat{X}} \sum_{\hat{y} \in \hat{Y}} p(\hat{x}, \hat{y}) \log \frac{p(\hat{x}, \hat{y})}{p(\hat{x}) p(\hat{y})}
 $$
@@ -58,24 +53,22 @@ $$
 $$
 trong đó $n_j$ biểu thị số lượng mẫu trong lớp $j$, $\mu_{ij}$ biểu thị giá trị trung bình của đặc trưng $F_i$ cho các mẫu trong lớp $j$, $\mu_i$ là giá trị trung bình của đặc trưng $F_i$, và $\sigma_{ij}^2$ biểu thị giá trị phương sai của đặc trưng $F_i$ cho các mẫu trong lớp $j$.
 
-Giá trị tối ưu xấp xỉ của bài toán (\ref{bai toan : 14}) là $f(w^*) = 0.153711$ với thời gian tính toán $T = 6.096260s$ cho thuật toán đề xuất, trong khi $f(w^*) = 0.154013$, $T = 11.030719$ cho Thuật toán RNN. So sánh với Thuật toán RNN, thuật toán của chúng tôi vượt trội hơn cả về độ chính xác và thời gian tính toán.
+Giá trị tối ưu xấp xỉ của bài toán (\ref{bai toan : 14}) là $f(w^*) = 0.153711$ với thời gian tính toán $T = 6.096260s$ cho thuật toán đề xuất, trong khi $f(w^*) = 0.154013$, $T = 11.030719$ cho Thuật toán RNN. So sánh với Thuật toán RNN, thuật toán được đề xuất trong bài báo \cite{thang2024saaqp} vượt trội hơn cả về độ chính xác và thời gian tính toán.
 
 \subsection*{5.2 Hồi quy logistic đa biến}
-
 Các thực nghiệm được thực hiện với tập dữ liệu bao gồm $N$ quan sát $(\mathbf{a}_i, b_i) \in \mathbb{R}^d \times \mathbb{R}, i = 1, \dots, n$. Hàm mất mát cross-entropy cho hồi quy logistic đa biến được cho bởi $J(x) = -\sum_{i=1}^{N} (b_i \log(\sigma(-x^T \mathbf{a}_i)) + (1 - b_i) \log(1 - \sigma(-x^T \mathbf{a}_i)))$, trong đó $\sigma$ là hàm sigmoid. Kết hợp với điều chuẩn $\ell_2$, chúng ta có hàm mất mát được điều chuẩn $\bar{J}(x) = J(x) + \frac{1}{2N}\|x\|^2$. Hệ số Lipschitz $L$ được ước tính bởi $\frac{1}{2N}(\|A\|^2/2 + 1)$, trong đó $A = (a_1^T, \dots, a_n^T)^T$.
+Trong bài báo \cite{thang2024saaqp}, các tác giả so sánh các thuật toán huấn luyện bài toán hồi quy logistic bằng cách sử dụng các tập dữ liệu Mushrooms và W8a (xem Malitsky và Mishchenko 2020) \cite{malitsky2020adaptive}. Phương pháp GDA được so sánh với thuật toán GD có kích thước bước là $1/L$ và phương pháp tăng tốc Nesterov. Chúng tôi đã tiến hành triển khai lại thí nghiệm, kết quả chi tiết được minh họa trong Hình \hyperref[fig:hinh3]{3} và \hyperref[fig:hinh4]{4}. Kết quả thu được hoàn toàn tương thích với kết quả đã trình bày trong bài báo \cite{thang2024saaqp}. Các hình này cho thấy rằng Thuật toán GDA vượt trội hơn Thuật toán GD và phương pháp tăng tốc Nesterov về giá trị hàm mục tiêu trong các lần lặp. Đặc biệt, Hình \hyperref[fig:hinh4]{4} thể hiện sự thay đổi của giá trị hàm mục tiêu theo các hệ số $\kappa$ khác nhau. Trong hình này, ký hiệu "GDA\_0.75" tương ứng với trường hợp $\kappa = 0.75$. Hình \hyperref[fig:hinh5]{5} trình bày việc giảm kích thước bước từ kích thước bước ban đầu tương ứng với kết quả trong Hình \hyperref[fig:hinh4]{4}.
 
-Chúng tôi so sánh các thuật toán huấn luyện bài toán hồi quy logistic bằng cách sử dụng các tập dữ liệu Mushrooms và W8a (xem Malitsky và Mishchenko 2020) \cite{malitsky2020adaptive}. Phương pháp GDA được so sánh với thuật toán GD có kích thước bước là $1/L$ và phương pháp tăng tốc Nesterov. Kết quả tính toán được hiển thị trong Hình \hyperref[hinh3]{3} và \hyperref[hinh4]{4} tương ứng. Các hình này cho thấy rằng Thuật toán GDA vượt trội hơn Thuật toán GD và phương pháp tăng tốc Nesterov về giá trị hàm mục tiêu trong các lần lặp. Đặc biệt, Hình \hyperref[hinh4]{4} thể hiện sự thay đổi của giá trị hàm mục tiêu theo các hệ số $\kappa$ khác nhau. Trong hình này, ký hiệu "GDA\_0.75" tương ứng với trường hợp $\kappa = 0.75$. Hình \hyperref[hinh5]{5} trình bày việc giảm kích thước bước từ kích thước bước ban đầu tương ứng với kết quả trong Hình \hyperref[hinh4]{4}.
-
-\begin{figure}[h]
+\begin{figure}[!htbp]
 \centering
 \begin{subfigure}[b]{0.45\textwidth}
    \centering
-   \includegraphics[width = \linewidth]{fig3-1}
+   \includegraphics[width = \linewidth]{images/fig3-1.png}
 \end{subfigure}
 \hfill
 \begin{subfigure}[b]{0.45\textwidth}
    \centering
-   \includegraphics[width = \linewidth]{fig3-2}
+   \includegraphics[width = \linewidth]{images/fig3-2}
 \end{subfigure}
 \caption{Kết quả tính toán
 cho hồi quy logistic với
@@ -83,33 +76,31 @@ tập dữ liệu Mushrooms}
 \label{fig:hinh3}
 \end{figure}
 
-\begin{figure}[h]
-\includegraphics[width=0.8\linewidth]{fig4}
+\begin{figure}[!htbp]
+\includegraphics[width=0.8\linewidth]{images/fig4.png}
 \caption{Kết quả tính toán hồi quy logistic với tập dữ liệu W8a}
 \label{fig:hinh4}
 \end{figure}
 
-\begin{figure}[H]
-\includegraphics[width=0.8\linewidth]{fig5}
+\begin{figure}[!htbp]
+\includegraphics[width=0.8\linewidth]{images/fig5.png}
 \caption{Các bước nhảy thay đổi cho mỗi lần lặp trong hồi quy logistic với tập dữ liệu W8a}
 \label{fig:hinh5}
 \end{figure}
 
 \subsection*{5.3 Mạng nơ-ron cho phân loại}
+Để cung cấp một ví dụ về cách thuật toán đề xuất có thể được triển khai vào một mô hình huấn luyện mạng nơ-ron, các tác giả đã sử dụng các kiến trúc ResNet-18 tiêu chuẩn đã được triển khai trong PyTorch và huấn luyện chúng để phân loại các hình ảnh được lấy từ tập dữ liệu Cifar10 (được tải xuống tại \url{https://www.cs.toronto.edu/~kriz/cifar.html}), trong khi xem xét hàm mất mát cross-entropy. Trong các nghiên cứu với ResNet-18, các tác giả đã sử dụng các thiết lập mặc định của Adam cho các tham số của nó.
 
-Để cung cấp một ví dụ về cách thuật toán đề xuất có thể được triển khai vào một mô hình huấn luyện mạng nơ-ron, chúng tôi sẽ sử dụng các kiến trúc ResNet-18 tiêu chuẩn đã được triển khai trong PyTorch và sẽ huấn luyện chúng để phân loại các hình ảnh được lấy từ tập dữ liệu Cifar10 (được tải xuống tại \url{https://www.cs.toronto.edu/~kriz/cifar.html}), trong khi xem xét hàm mất mát cross-entropy. Trong các nghiên cứu với ResNet-18, chúng tôi đã sử dụng các thiết lập mặc định của Adam cho các tham số của nó.
+Để huấn luyện mô hình mạng nơ-ron này, bài báo \cite{thang2024saaqp} sử dụng biến thể ngẫu nhiên của phương pháp GDA (Thuật toán SGDA) để so sánh với các thuật toán Stochastic Gradient Descent (SGD). Các kết quả tính toán được hiển thị trong Hình \hyperref[fig:hinh6]{6} và \hyperref[fig:hinh7]{7}. Tương tự như kết quả đã công bố trong bài báo \cite{thang2024saaqp}, các kết quả của chúng tôi cho thấy rằng Thuật toán SGDA vượt trội hơn so với Thuật toán SGD thông thường. Cụ thể, SGDA đạt được độ chính xác kiểm tra (testing accuracy) cao hơn và độ mất mát huấn luyện (train loss) thấp hơn trong cùng số vòng lặp.
 
-Để huấn luyện mô hình mạng nơ-ron này, chúng tôi sử dụng biến thể ngẫu nhiên của phương pháp GDA (Thuật toán SGDA) để so sánh với các thuật toán Stochastic Gradient Descent (SGD). Các kết quả tính toán được hiển thị trong Hình \hyperref[hinh6]{6} và \hyperref[hinh7]{7} cho thấy rằng Thuật toán SGDA vượt trội hơn Thuật toán SGD về độ chính xác kiểm tra (testing accuracy) và độ mất mát huấn luyện (train loss) qua các lần lặp.
-
-\begin{figure}[h]
-\includegraphics[width=0.8\linewidth]{fig6}
+\begin{figure}[!htbp]
+\includegraphics[width=0.8\linewidth]{images/fig6.png}
 \caption{Độ chính xác kiểm thử qua các lần lặp của mô hình ResNet-18}
 \label{fig:hinh6}
 \end{figure}
 
 \begin{figure}[H]
-\includegraphics[width=0.8\linewidth]{fig7}
+\includegraphics[width=0.8\linewidth]{images/fig7.png}
 \caption{Mức độ mất mát dữ liệu trong quá trình huấn luyện qua các lần lặp của mô hình ResNet-18.}
 \label{fig:hinh7}
 \end{figure}
-

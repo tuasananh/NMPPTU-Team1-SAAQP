@@ -3,6 +3,7 @@ import numpy as np
 from .utils import ScalarFunction, VectorFunction, Bounds, Constraints, Projector
 from autograd import grad, hessian
 
+
 class OptimizationResult:
     """
     Result of the optimization process.
@@ -60,7 +61,7 @@ class GD:
     def solve(
         self,
         x0: np.ndarray,
-        step_size: float = 0.1, 
+        step_size: float = 0.1,
         max_iter: int = 1000,
         stop_if_stationary: bool = True,
         tol: Optional[float] = None,
@@ -86,28 +87,28 @@ class GD:
             if projector_max_iter is not None
             else self.projector_max_iter
         )
-        
+
         projector = Projector(
             bounds=self.bounds,
             constraints=self.constraints,
             tol=tol,
             max_iter=projector_max_iter,
         )
-        
+
         x_k = projector(x0)
         H = self.hessian(x_k)
         L = np.max(np.abs(np.linalg.eigvalsh(H)))
         if L > 1e-12:
             step_size = 1.0 / L
-            
+
         xs = []
         for _ in range(max_iter):
-            xs.append(x_k.copy()) 
+            xs.append(x_k.copy())
             grad_f_x_k = self.gradient(x_k)
             x_k1 = projector(x_k - step_size * grad_f_x_k)
             if stop_if_stationary and np.allclose(x_k, x_k1, atol=tol, rtol=tol):
                 x_k = x_k1
-                xs.append(x_k.copy()) 
+                xs.append(x_k.copy())
                 break
             x_k = x_k1
         f_x_k = self.function(x_k)

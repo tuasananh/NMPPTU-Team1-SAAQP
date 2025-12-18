@@ -3,6 +3,7 @@ from .utils import ScalarFunction, VectorFunction, OptimizationResult
 from autograd import grad
 from typing import Optional
 
+
 class GDA:
     def __init__(
         self,
@@ -40,7 +41,7 @@ class GDA:
                 success = True
                 if stop_if_stationary:
                     break
-                    
+
             x_k = x_k1
             f_x_k = f_x_k1
 
@@ -50,3 +51,6 @@ class GDA:
             success=success,
             history=xs,
         )
+
+
+__all__ = ["GDA"]

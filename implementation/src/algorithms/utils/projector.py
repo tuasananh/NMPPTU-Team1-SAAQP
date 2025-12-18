@@ -2,6 +2,7 @@ from typing import List, Optional, Union
 import numpy as np
 from scipy.optimize import minimize, Bounds, LinearConstraint, NonlinearConstraint
 
+
 class Projector:
     def __init__(
         self,
@@ -21,8 +22,12 @@ class Projector:
             return y - x
 
         x0 = x.copy()
-        x0 = np.clip(x0, self.bounds.lb, self.bounds.ub) if self.bounds is not None else x0
-        
+        x0 = (
+            np.clip(x0, self.bounds.lb, self.bounds.ub)
+            if self.bounds is not None
+            else x0
+        )
+
         res = minimize(
             objective,
             x0=x0,
@@ -36,5 +41,8 @@ class Projector:
         if not res.success:
             # Fallback or warning
             print(f"Projection warning: {res.message} {res.x}")
-            
+
         return res.x
+
+
+__all__ = ["Projector"]

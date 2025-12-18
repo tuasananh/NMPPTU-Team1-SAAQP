@@ -85,7 +85,9 @@ def format_vector(x: np.ndarray, max_len: int = 12) -> str:
     if x.size <= max_len:
         return np.array2string(x, precision=4, suppress_small=False)
     head = x[:max_len]
-    return np.array2string(head, precision=4, suppress_small=False) + f", ... (d={x.size})"
+    return (
+        np.array2string(head, precision=4, suppress_small=False) + f", ... (d={x.size})"
+    )
 
 
 # -----------------------------
@@ -161,13 +163,17 @@ def run_dataset(dataset: str, it_max=None, eps_for_conv: float = 1e-11):
         gda_runs.append((kappa, res, vals))
 
     # best found f*
-    f_star = float(np.min(np.concatenate([vals_gd, vals_ne] + [vals for _, _, vals in gda_runs])))
+    f_star = float(
+        np.min(np.concatenate([vals_gd, vals_ne] + [vals for _, _, vals in gda_runs]))
+    )
 
     # clamp to paper floor for plotting + convergence
     floor = 1e-14
     gd_curve = np.maximum(vals_gd - f_star, floor)
     ne_curve = np.maximum(vals_ne - f_star, floor)
-    gda_curves = [(kappa, np.maximum(vals - f_star, floor)) for kappa, _, vals in gda_runs]
+    gda_curves = [
+        (kappa, np.maximum(vals - f_star, floor)) for kappa, _, vals in gda_runs
+    ]
 
     # ----------------SUMMARY ----------------
     print("\n=== SUMMARY ===")
@@ -209,9 +215,23 @@ def run_dataset(dataset: str, it_max=None, eps_for_conv: float = 1e-11):
     apply_log_axis(ax)
 
     ax.plot(gd_curve, label="GD", linewidth=2.0)
-    ax.plot(ne_curve, label="Nesterov", linewidth=2.0, marker="o", markevery=250, markersize=4)
+    ax.plot(
+        ne_curve,
+        label="Nesterov",
+        linewidth=2.0,
+        marker="o",
+        markevery=250,
+        markersize=4,
+    )
     for kappa, curve in gda_curves:
-        ax.plot(curve, label=f"GDA (k={kappa})", linewidth=2.0, marker="*", markevery=250, markersize=5)
+        ax.plot(
+            curve,
+            label=f"GDA (k={kappa})",
+            linewidth=2.0,
+            marker="*",
+            markevery=250,
+            markersize=5,
+        )
 
     ax.set_xlabel("Iteration")
     ax.set_ylabel(r"$f(w^k) - f_{\ast}$")

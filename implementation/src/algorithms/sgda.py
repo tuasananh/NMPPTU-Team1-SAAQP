@@ -3,11 +3,12 @@ import numpy as np
 
 from autograd import grad
 
-from .gda import OptimizationResult
-from .utils import Bounds, Constraints, Projector
-
-StochasticScalarFunction = Callable[[np.ndarray, Any], np.float64]
-Sampler = Callable[[], Any]
+from algorithms import (
+    OptimizationResult,
+    Sampler,
+    StochasticScalarFunction,
+    VectorFunction,
+)
 
 
 class SGDA:
@@ -25,11 +26,8 @@ class SGDA:
     def __init__(
         self,
         stochastic_function: StochasticScalarFunction,
-        bounds: Bounds,
-        constraints: Constraints,
         sampler: Sampler,
-        tol: float = 1e-9,
-        projector_max_iter: int = 1000,
+        projector: VectorFunction,
     ):
         """
         Initialize the SGDA optimizer.
@@ -45,13 +43,10 @@ class SGDA:
             projector_max_iter: Maximum iterations for the projection subproblem.
         """
         self.stochastic_function = stochastic_function
-        self.bounds = bounds
-        self.constraints = constraints
         self.sampler = sampler
+        self.projector = projector
         # Gradient with respect to x; ξ is treated as a constant parameter.
         self.gradient = grad(stochastic_function)  # argnum=0 by default
-        self.tol = tol
-        self.projector_max_iter = projector_max_iter
 
     def solve(
         self,
@@ -61,8 +56,7 @@ class SGDA:
         kappa: float = 0.5,
         max_iter: int = 1000,
         stop_if_stationary: bool = True,
-        tol: Optional[float] = None,
-        projector_max_iter: Optional[int] = None,
+        tol: Optional[float] = 1e-8,
     ) -> OptimizationResult:
         """
         Run SGDA starting from x0.
@@ -76,37 +70,25 @@ class SGDA:
             max_iter: Maximum number of iterations.
             stop_if_stationary: If True, stop when x_{k+1} is close to x_k.
             tol: Optional override of the default tolerance.
-            projector_max_iter: Optional override of the projector max iterations.
 
         Returns:
             OptimizationResult: Contains the final point, function value
             estimate, success flag, termination message and history of iterates.
         """
-        tol = tol if tol is not None else self.tol
-        projector_max_iter = (
-            projector_max_iter
-            if projector_max_iter is not None
-            else self.projector_max_iter
-        )
-
-        projector = Projector(
-            bounds=self.bounds,
-            constraints=self.constraints,
-            tol=tol,
-            max_iter=projector_max_iter,
-        )
-
+        projector = self.projector
         x_k = projector(x0)
         lambda_k = lambda_0
         xs: List[np.ndarray] = []
 
         f_x_k: Optional[np.float64] = None
 
+        success = False
+
         for _ in range(max_iter):
             xs.append(x_k)
 
             xi_k = self.sampler()
-    
+
             grad_f_x_k = self.gradient(x_k, xi_k)
             f_x_k = self.stochastic_function(x_k, xi_k)
 
@@ -116,12 +98,10 @@ class SGDA:
             if f_x_k1 > f_x_k - sigma * np.dot(grad_f_x_k, x_k - x_k1):
                 lambda_k *= kappa
 
-            if stop_if_stationary and np.allclose(
-                x_k, x_k1, atol=tol, rtol=tol
-            ):
-                x_k = x_k1
-                f_x_k = f_x_k1
-                break
+            if np.allclose(x_k, x_k1, atol=tol, rtol=tol):
+                success = True
+                if stop_if_stationary:
+                    break
 
             x_k = x_k1
             f_x_k = f_x_k1
@@ -133,6 +113,9 @@ class SGDA:
         return OptimizationResult(
             x_opt=x_k,
             fun_opt=f_x_k,
-            success=len(xs) < max_iter,
+            success=success,
             history=xs,
         )
+
+
+__all__ = ["SGDA"]

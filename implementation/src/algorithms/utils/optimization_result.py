@@ -1,6 +1,7 @@
 import numpy as np
 from typing import List
 
+
 class OptimizationResult:
     """
     Result of the optimization process.
@@ -25,3 +26,6 @@ class OptimizationResult:
         self.success = success
         self.message = "Solution converged" if success else "Maximum iterations reached"
         self.history = history
+
+
+__all__ = ["OptimizationResult"]

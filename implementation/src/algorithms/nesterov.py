@@ -3,8 +3,14 @@ import numpy as np
 
 from autograd import grad
 
-from .utils import ScalarFunction, VectorFunction, Bounds, Constraints, Projector
-from .gda import OptimizationResult
+from algorithms import (
+    ScalarFunction,
+    VectorFunction,
+    Bounds,
+    Constraints,
+    Projector,
+    OptimizationResult,
+)
 
 
 class Nesterov:
@@ -26,14 +32,7 @@ class Nesterov:
         y_{k+1} = x_{k+1} + (t_k - 1) / t_{k+1} * (x_{k+1} - x_k)
     """
 
-    def __init__(
-        self,
-        function: ScalarFunction,
-        bounds: Bounds,
-        constraints: Constraints,
-        tol: float = 1e-9,
-        projector_max_iter: int = 1000,
-    ):
+    def __init__(self, function: ScalarFunction, projector: VectorFunction):
         """
         Initialize the Nesterov optimizer.
 
@@ -45,11 +44,8 @@ class Nesterov:
             projector_max_iter: Maximum number of iterations for the projection subproblem.
         """
         self.function = function
-        self.bounds = bounds
-        self.constraints = constraints
+        self.projector = projector
         self.gradient: VectorFunction = grad(function)
-        self.tol = tol
-        self.projector_max_iter = projector_max_iter
 
     def solve(
         self,
@@ -57,8 +53,7 @@ class Nesterov:
         L: float,
         max_iter: int = 1000,
         stop_if_stationary: bool = True,
-        tol: Optional[float] = None,
-        projector_max_iter: Optional[int] = None,
+        tol: Optional[float] = 1e-8,
     ) -> OptimizationResult:
         """
         Solve the optimization problem using projected Nesterov's accelerated gradient.
@@ -85,20 +80,7 @@ class Nesterov:
         if L <= 0:
             raise ValueError("L (Lipschitz constant) must be positive.")
 
-        tol = tol if tol is not None else self.tol
-        projector_max_iter = (
-            projector_max_iter
-            if projector_max_iter is not None
-            else self.projector_max_iter
-        )
-
-        projector = Projector(
-            bounds=self.bounds,
-            constraints=self.constraints,
-            tol=tol,
-            max_iter=projector_max_iter,
-        )
-
+        projector = self.projector
         # Project the initial point onto the feasible set
         x_k = projector(x0)
         y_k = x_k.copy()
@@ -106,6 +88,8 @@ class Nesterov:
 
         xs: List[np.ndarray] = []
         f_x_k = self.function(x_k)
+
+        success = False
 
         for _ in range(max_iter):
             xs.append(x_k)
@@ -122,12 +106,10 @@ class Nesterov:
             y_k1 = x_k1 + ((t_k - 1.0) / t_k1) * (x_k1 - x_k)
 
             # Stopping criterion: successive iterates become stationary
-            if stop_if_stationary and np.allclose(
-                x_k, x_k1, atol=tol, rtol=tol
-            ):
-                x_k = x_k1
-                f_x_k = f_x_k1
-                break
+            if np.allclose(x_k, x_k1, atol=tol, rtol=tol):
+                success = True
+                if stop_if_stationary:
+                    break
 
             x_k = x_k1
             y_k = y_k1
@@ -137,6 +119,6 @@ class Nesterov:
         return OptimizationResult(
             x_opt=x_k,
             fun_opt=f_x_k,
-            success=len(xs) < max_iter,
+            success=success,
             history=xs,
         )

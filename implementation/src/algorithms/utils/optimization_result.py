@@ -1,7 +1,9 @@
+from dataclasses import dataclass
 import numpy as np
 from typing import List
 
 
+@dataclass
 class OptimizationResult:
     """
     Result of the optimization process.
@@ -14,18 +16,11 @@ class OptimizationResult:
         history (List[np.ndarray]): List of solution vectors at each iteration.
     """
 
-    def __init__(
-        self,
-        x_opt: np.ndarray,
-        fun_opt: np.float64,
-        success: bool,
-        history: List[np.ndarray],
-    ):
-        self.x_opt = x_opt
-        self.fun_opt = fun_opt
-        self.success = success
-        self.message = "Solution converged" if success else "Maximum iterations reached"
-        self.history = history
-
-
+    x_opt: np.ndarray
+    f_opt: np.float64
+    success: bool
+    x_history: List[np.ndarray] 
+    f_history: List[np.ndarray]
+    lr_history: List[float]
+    
 __all__ = ["OptimizationResult"]

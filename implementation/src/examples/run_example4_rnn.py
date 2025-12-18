@@ -1,9 +1,18 @@
 from __future__ import annotations
+
 import time
 import numpy as np
+from autograd import grad
 
 from examples.example4_problem import make_example4
 from algorithms.rnn import rnn_solve_paper, RNNParams
+
+
+def _get_grad_f(prob):
+    if "grad_f" in prob and prob["grad_f"] is not None:
+        return prob["grad_f"]
+    gf = grad(prob["f"])
+    return lambda x: np.asarray(gf(x), dtype=float)
 
 
 def main():
@@ -14,10 +23,12 @@ def main():
         prob = make_example4(n=n, q=np.ones(n))
         x0 = rng.standard_normal(n)
 
+        grad_f = _get_grad_f(prob)
+
         t0 = time.perf_counter()
         x_star, _ = rnn_solve_paper(
             x0=x0,
-            grad_f=prob["grad_f"],
+            grad_f=grad_f,
             g_list=prob["g_list"],
             grad_g_list=prob["grad_g_list"],
             A=prob["A"],

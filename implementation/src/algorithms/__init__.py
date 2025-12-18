@@ -5,6 +5,7 @@ from .gd import *
 from .gd_lipchitz import *
 from .sgda import *
 from .nesterov import *
+from .datasets.libsvm_loader import * 
 
 __all__ = [
     "GDA",

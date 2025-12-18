@@ -64,3 +64,9 @@ def load_w8a(train: bool = True):
         return _load_libsvm("w8a/w8a")
     else:
         return _load_libsvm("w8a/w8a.t")
+
+
+__all__ = [
+    "load_mushrooms",
+    "load_w8a",
+]

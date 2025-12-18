@@ -225,37 +225,3 @@ $n$
 \hline
 \end{tabular}
 \end{table}
-
-\textbf{Ví dụ 4} Để so sánh Thuật toán GDA với Thuật toán RNN trong \cite{liu2022one}, xét bài toán \ref{eq:OP} với hàm mục tiêu
-\[
-f(x) = -\exp\left(-\sum_{i=1}^{n} \frac{x_i^2}{\varrho_i^2}\right)
-\]
-là giả lồi trên tập ràng buộc lồi
-\[
-C := \{Ax = b,\ g(x) \le 0\},
-\]
-trong đó $x \in \mathbb{R}^n$, vector tham số $\varrho = (\varrho_1, \varrho_2, \dots, \varrho_n)^\top$ với $\varrho_i > 0$, ma trận $A = (a_1, a_2, \dots, a_n) \in \mathbb{R}^{1 \times n}$ với $a_i = 1$ khi $1 \le i \le n/2$ và $a_i = 3$ khi $n/2 < i \le n$, và số $b = 16$. Các ràng buộc bất đẳng thức là
-\[
-g_i(x) = x_{10\cdot(i-1)+1}^2 + x_{10\cdot(i-1)+2}^2 + \cdots + x_{10\cdot(i-1)+10}^2 - 20,
-\]
-với $i = 1, 2, \dots, n/10$. Bảng~\ref{tab:ex4} trình bày kết quả tính toán của Thuật toán GDA và RNN. Lưu ý rằng hàm $-\ln(-z)$ là đơn điệu tăng với $z \in \mathbb{R}$, $z < 0$. Do đó, để so sánh giá trị tối ưu xấp xỉ qua các vòng lặp, các tác giả tính $-\ln(-f(x^*))$ thay vì $f(x^*)$, với nghiệm tối ưu xấp xỉ $x^*$. Với mỗi $n$, bài báo \cite{thang2024saaqp} giải bài toán \ref{eq:OP} để tìm giá trị $-\ln(-f(x^*))$, số vòng lặp (\#Iter) để dừng thuật toán, và thời gian tính toán (Time) tính bằng giây. Kết quả tính toán cho thấy thuật toán đề xuất vượt trội hơn Thuật toán RNN trong các kịch bản thử nghiệm cả về giá trị tối ưu và thời gian tính toán, đặc biệt khi chiều lớn.
-
-\begin{table}[htbp]
-\caption{Kết quả tính toán cho Ví dụ 4}
-\label{tab:ex4}
-\centering
-\begin{tabular}{l|lll|lll}
-\hline
-$n$ & \multicolumn{3}{c|}{Thuật toán GDA (đề xuất)} & \multicolumn{3}{c}{Thuật toán RNN} \\
- & $-\ln(-f(x^*))$ & \#Iter & Time & $-\ln(-f(x^*))$ & \#Iter & Time \\
-\hline
-10  & 5.1200  & 10 & 0.3 & 5.1506  & 1000 & 256 \\
-20  & 2.5600  & 10 & 0.8 & 2.5673  & 1000 & 503 \\
-50  & 1.0240  & 10 & 2   & 1.0299  & 1000 & 832 \\
-100 & 0.5125  & 10 & 7   & 13.7067 & 1000 & 1420 \\
-300 & 15.7154 & 10 & 84  & 39.3080 & 1000 & 3292 \\
-400 & 20.9834 & 10 & 163 & 57.6837 & 1000 & 4426 \\
-600 & 29.0228 & 10 & 371 & 83.6265 & 1000 & 6788 \\
-\hline
-\end{tabular}
-\end{table}

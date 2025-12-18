@@ -1,36 +1,9 @@
 from typing import List, Optional
 import numpy as np
-from .utils import ScalarFunction, VectorFunction, Bounds, Constraints, Projector
+from .utils import ScalarFunction, VectorFunction, Projector, OptimizationResult
 from autograd import grad, hessian
 
-
-class OptimizationResult:
-    """
-    Result of the optimization process.
-
-    Attributes:
-        x_opt (np.ndarray): The optimal solution found.
-        fun_opt (np.float64): The value of the objective function at the optimal solution.
-        success (bool): Whether the optimization converged successfully.
-        message (str): Description of the cause of the termination.
-        history (List[np.ndarray]): List of solution vectors at each iteration.
-    """
-
-    def __init__(
-        self,
-        x_opt: np.ndarray,
-        fun_opt: np.float64,
-        success: bool,
-        history: List[np.ndarray],
-    ):
-        self.x_opt = x_opt
-        self.fun_opt = fun_opt
-        self.success = success
-        self.message = "Solution converged" if success else "Maximum iterations reached"
-        self.history = history
-
-
-class GD:
+class GDLipchitz:
     """
     This class implements the standard Projected Gradient Descent method (Algorithm 2)
     to minimize a scalar function subject to bounds and constraints using a fixed step size.
@@ -45,18 +18,12 @@ class GD:
     def __init__(
         self,
         function: ScalarFunction,
-        bounds: Bounds,
-        constraints: Constraints,
-        tol: float = 1e-9,
-        projector_max_iter=1000,
+        projector: VectorFunction
     ):
         self.function = function
-        self.bounds = bounds
-        self.constraints = constraints
+        self.projector = projector
         self.gradient: VectorFunction = grad(function)
         self.hessian = hessian(function)
-        self.tol = tol
-        self.projector_max_iter = projector_max_iter
 
     def solve(
         self,
@@ -64,8 +31,7 @@ class GD:
         step_size: float = 0.1,
         max_iter: int = 1000,
         stop_if_stationary: bool = True,
-        tol: Optional[float] = None,
-        projector_max_iter: Optional[int] = None,
+        tol: Optional[float] = 1e-8,
     ) -> OptimizationResult:
         """
         Solve the optimization problem using standard Projected Gradient Descent with fixed step size.
@@ -81,20 +47,8 @@ class GD:
         Returns:
             OptimizationResult: The result of the optimization.
         """
-        tol = tol if tol is not None else self.tol
-        projector_max_iter = (
-            projector_max_iter
-            if projector_max_iter is not None
-            else self.projector_max_iter
-        )
 
-        projector = Projector(
-            bounds=self.bounds,
-            constraints=self.constraints,
-            tol=tol,
-            max_iter=projector_max_iter,
-        )
-
+        projector = self.projector
         x_k = projector(x0)
         H = self.hessian(x_k)
         L = np.max(np.abs(np.linalg.eigvalsh(H)))

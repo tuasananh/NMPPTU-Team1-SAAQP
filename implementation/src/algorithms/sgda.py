@@ -3,7 +3,7 @@ import numpy as np
 
 from autograd import grad
 
-from algorithms import (
+from .utils import (
     OptimizationResult,
     Sampler,
     StochasticScalarFunction,

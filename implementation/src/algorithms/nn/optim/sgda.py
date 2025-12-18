@@ -16,7 +16,8 @@ from torch.optim import Optimizer
 from typing import Union, Optional, Callable
 from torch import Tensor
 
-class SGDAOptimizer(Optimizer):  
+
+class SGDAOptimizer(Optimizer):
     def __init__(
         self,
         params,
@@ -25,7 +26,7 @@ class SGDAOptimizer(Optimizer):
         lr: Union[float, Tensor] = 1e-3,
         momentum: float = 0.0,
         weight_decay: Union[float, Tensor] = 0,
-    ):  
+    ):
         self.sigma = sigma
         self.kappa = kappa
         if isinstance(lr, Tensor) and lr.numel() != 1:
@@ -44,11 +45,9 @@ class SGDAOptimizer(Optimizer):
         }
         super().__init__(params, defaults)
 
-
     @torch.no_grad()
     def step(self):
-        """Perform a single optimization step and returns the inner product of the Armijo Condition
-        """
+        """Perform a single optimization step and returns the inner product of the Armijo Condition"""
         inner_product = 0.0
 
         for group in self.param_groups:
@@ -63,16 +62,16 @@ class SGDAOptimizer(Optimizer):
 
                 if weight_decay != 0:
                     d_p = d_p.add(p, alpha=weight_decay)
-                
+
                 # Momentum
                 param_state = self.state[p]
                 if momentum != 0:
-                    if 'momentum_buffer' not in param_state:
-                        buf = param_state['momentum_buffer'] = torch.clone(d_p).detach()
+                    if "momentum_buffer" not in param_state:
+                        buf = param_state["momentum_buffer"] = torch.clone(d_p).detach()
                     else:
-                        buf = param_state['momentum_buffer']
+                        buf = param_state["momentum_buffer"]
                         buf.mul_(momentum).add_(d_p)
-                    
+
                     # Update direction is the momentum buffer
                     update_direction = buf
                 else:
@@ -81,30 +80,30 @@ class SGDAOptimizer(Optimizer):
                 # Calculate inner product <grad, step_direction>
                 # step_direction = x_k - x_{k+1} = lr * update_direction
                 # inner_product += <d_p, lr * update_direction>
-                
+
                 # We use the original gradient d_p for the inner product calculation as per paper/standard Armijo
                 # <nabla f(x_k), x_k - x_{k+1}>
                 term = torch.dot(d_p.view(-1), update_direction.view(-1))
                 inner_product += lr * term.item()
 
                 p.data.add_(update_direction, alpha=-lr)
-                
+
         return inner_product
-    
+
     @property
     def current_lr(self):
         """Get the current learning rate."""
-        return self.param_groups[0]['lr']
+        return self.param_groups[0]["lr"]
 
-    @current_lr.setter  
+    @current_lr.setter
     def current_lr(self, new_lr):
         """Set a new learning rate for all parameter groups."""
         for group in self.param_groups:
-            group['lr'] = new_lr
+            group["lr"] = new_lr
 
-    def check_armijo_and_update_lr(self, loss_before, loss_after, inner_product): 
+    def check_armijo_and_update_lr(self, loss_before, loss_after, inner_product):
         """Check the Armijo condition and update the learning rate accordingly.
-        
+
         Args:
             loss_before: Loss before the optimization step
             loss_after: Loss after the optimization step
@@ -117,9 +116,12 @@ class SGDAOptimizer(Optimizer):
         """
 
         armijo = loss_after - loss_before + self.sigma * inner_product
-        if armijo > 0: 
+        if armijo > 0:
             # Condition failed: reduce learning rate
             self.current_lr *= self.kappa
             return False
 
         return True
+
+
+__all__ = ["SGDAOptimizer"]

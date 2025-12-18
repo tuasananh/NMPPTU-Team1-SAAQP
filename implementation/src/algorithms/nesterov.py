@@ -9,6 +9,8 @@ from .utils import (
     OptimizationResult,
 )
 
+from tqdm import tqdm
+
 
 class Nesterov:
     """
@@ -51,6 +53,10 @@ class Nesterov:
         max_iter: int = 1000,
         stop_if_stationary: bool = True,
         tol: Optional[float] = 1e-8,
+        with_x_history: bool = True,
+        with_f_history: bool = False,
+        with_lr_history: bool = False,
+        with_tqdm: bool = False,
     ) -> OptimizationResult:
         """
         Solve the optimization problem using projected Nesterov's accelerated gradient.
@@ -74,45 +80,57 @@ class Nesterov:
                 - message: Text description of termination.
                 - history: List of iterates x_k.
         """
+
         projector = self.projector
-        # Project the initial point onto the feasible set
+        
+        # Initialize
         x_k = projector(x0)
         y_k = x_k.copy()
         t_k = 1.0
-
+        
         xs: List[np.ndarray] = []
-        f_x_k = self.function(x_k)
-
+        fs = []
+        lrs = []
         success = False
 
-        for _ in range(max_iter):
-            xs.append(x_k)
+        iter_range = tqdm(range(max_iter), leave=False, desc="Nesterov") if with_tqdm else range(max_iter)
+        for _ in iter_range:
+            if with_x_history:
+                xs.append(x_k.copy()) # Copy to ensure history doesn't point to updated array
+            if with_f_history:
+                fs.append(self.function(x_k))
+            if with_lr_history:
+                lrs.append(step_size)
 
-            # Gradient evaluated at the extrapolated point y_k
-            grad_f_y_k = self.gradient(y_k)
+            # 1. Gradient step (using lookahead y_k)
+            grad = self.gradient(y_k)
+            x_k1 = projector(y_k - step_size * grad)
 
-            # Gradient step followed by projection
-            x_k1 = projector(y_k - step_size * grad_f_y_k)
-            f_x_k1 = self.function(x_k1)
-
-            # Nesterov acceleration update
-            t_k1 = 0.5 * (1.0 + np.sqrt(1.0 + 4.0 * t_k * t_k))
-            y_k1 = x_k1 + ((t_k - 1.0) / t_k1) * (x_k1 - x_k)
-
-            # Stopping criterion: successive iterates become stationary
-            if np.allclose(x_k, x_k1, atol=tol, rtol=tol):
+            # 2. Check stopping criterion (only needs x)
+            if stop_if_stationary and np.allclose(x_k, x_k1, atol=tol, rtol=tol):
+                x_k = x_k1 # Ensure we return the latest
                 success = True
-                if stop_if_stationary:
-                    break
+                break
 
+            # 3. Nesterov momentum update
+            # We can overwrite y_k immediately because old y_k is done
+            t_k1 = 0.5 * (1.0 + np.sqrt(1.0 + 4.0 * t_k * t_k))
+            beta = (t_k - 1.0) / t_k1
+            
+            y_k = x_k1 + beta * (x_k1 - x_k)
+            
+            # Update pointers
             x_k = x_k1
-            y_k = y_k1
             t_k = t_k1
-            f_x_k = f_x_k1
+
+        # Calculate function value ONLY ONCE at the end
+        f_opt = self.function(x_k)
 
         return OptimizationResult(
             x_opt=x_k,
-            fun_opt=f_x_k,
+            f_opt=f_opt,
             success=success,
-            history=xs,
+            x_history=xs,
+            f_history=fs,
+            lr_history=lrs,
         )

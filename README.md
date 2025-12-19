@@ -1,4 +1,4 @@
-# Self-adaptive algorithms for quasiconvex programming and applications to machine learning
+# Thuật toán tự thích nghi cho lập trình tựa lồi và ứng dụng trong học máy
 
 **Tài liệu gốc:** [Self-adaptive algorithms for quasiconvex programming and applications to machine learning (2024)](paper.pdf).
 

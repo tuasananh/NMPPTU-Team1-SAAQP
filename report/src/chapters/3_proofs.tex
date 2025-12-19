@@ -5,9 +5,10 @@
 \renewcommand{\algorithmicthen}{\textbf{thì}}
 \renewcommand{\algorithmicelse}{\textbf{Ngược lại}}
 \algnotext{EndIf}
+
 Trong mục này, chúng tôi trình bày thuật toán được đề xuất và chứng minh sự hội tụ của nó. Dựa trên các mệnh đề và bổ đề đã nêu ở Mục \ref{sec:preliminaries}, bài báo \cite{thang2024saaqp} đưa ra kết quả chính như sau.
 
-\begin{algorithm}[htbp]
+\begin{algorithm}[ht!]
 \caption{Thuật toán Thích nghi Gradient Descent (GDA)}
 \begin{algorithmic}[1]
 \State \textbf{Bước 0.} Chọn $x^{0} \in C,\ \lambda_{0} \in (0, +\infty),\ \sigma,\ \kappa \in (0, 1)$. Đặt $k=0$.
@@ -25,6 +26,7 @@ Trong mục này, chúng tôi trình bày thuật toán được đề xuất v�
 \EndIf 
 \end{algorithmic}
 \end{algorithm}
+\FloatBarrier
 
 \begin{remark} \label{rem:1}
     Nếu Thuật toán GDA dừng tại bước $k$, thì $x^{k}$ là một điểm dừng của bài toán \ref{eq:OP}.

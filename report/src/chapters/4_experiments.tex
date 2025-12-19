@@ -4,7 +4,7 @@ Trong phần này, các tác giả sử dụng hai ví dụ hiện có và hai v
 
 Tất cả các thử nghiệm được thực hiện bằng Python trên laptop với CPU Intel Core i9-13900HX (24 lõi với xung nhịp cơ bản 2.2GHz) và 32GB RAM. Tiêu chí dừng trong các trường hợp sau là ``số vòng lặp $\le$ \#Iter'' trong đó \#Iter là số vòng lặp tối đa. Ký hiệu $x^*$ là điểm giới hạn của dãy lặp $\{x_k\}$ và Time là thời gian CPU của thuật toán GDA khi sử dụng tiêu chí dừng.
 
-Các hàm mục tiêu và ràng buộc không lồi được minh họa trong Ví dụ 1 và 2 lấy từ \cite{liu2022one}. Ngoài ra, Ví dụ 2 phức tạp hơn Ví dụ 1 về dạng hàm. Việc thực hiện Ví dụ 3 với hàm mục tiêu lồi và số chiều $n$ thay đổi cho phép đánh giá phương pháp đề xuất so với Thuật toán GD. Ví dụ 4 được thực hiện với hàm mục tiêu giả lồi và một số giá trị $n$ để đánh giá phương pháp được các tác giả đề xuất so với Thuật toán RNN.
+Các hàm mục tiêu và ràng buộc không lồi được minh họa trong Ví dụ 1 và 2 lấy từ \cite{liu2022one}. Ngoài ra, Ví dụ 2 phức tạp hơn Ví dụ 1 về dạng hàm. Việc thực hiện Ví dụ 3 với hàm mục tiêu lồi và số chiều $n$ thay đổi cho phép đánh giá phương pháp đề xuất so với Thuật toán GD.
 
 Để so sánh với phương pháp neurodynamic trong \cite{liu2022one}, bài báo xét bài toán OP$(f, C)$ với tập ràng buộc được xác định bởi $C = \{x \in \mathbb{R}^n \mid g(x) \le 0,\ Ax = b\}$, trong đó $g(x) := (g_1(x), g_2(x), \dots, g_m(x))^\top$ và $g_i : \mathbb{R}^n \to \mathbb{R}$, $i = 1, \dots, m$ là các hàm tựa lồi khả vi, ma trận $A \in \mathbb{R}^{p \times n}$ và $b = (b_1, b_2, \dots, b_p)^\top \in \mathbb{R}^p$. Trong \cite{liu2022one}, các tác giả đã giới thiệu hàm
 \[
@@ -100,7 +100,7 @@ với $a \in \mathbb{R}^n$ là lồi và ràng buộc không lồi được cho 
 C := \{ x \in \mathbb{R}^n_+ : 1 \le x_1 \dots x_n \}.
 \]
 
-Ví dụ này được thực hiện để so sánh Thuật toán GDA với thuật toán gradient descent gốc (GD). Thí nghiệm được thực hiện với hằng số được chọn ngẫu nhiên $\beta = 0.741271$, $\alpha = 3\beta^{3/2}\sqrt{n} + 1$ thỏa mãn điều kiện tham số và hệ số Lipschitz $L = (4\beta^{3/2}\sqrt{n} + 3\alpha)$ được gợi ý trong \cite{ferreira2022frankwolfe}. Cỡ bước của Thuật toán GD là $\lambda = 1/L$, và cỡ bước ban đầu của Thuật toán GDA là $\lambda_0 = 5/L$.
+Ví dụ này được thực hiện để so sánh Thuật toán GDA với thuật toán gradient descent gốc (GD). Thí nghiệm được thực hiện với hằng số được chọn ngẫu nhiên $\beta = 0.741271$, $\alpha = 3\beta^{3/2}\sqrt{n + 1}$ thỏa mãn điều kiện tham số và hệ số Lipschitz $L = (4\beta^{3/2}\sqrt{n} + 3\alpha)$ được gợi ý trong \cite{ferreira2022frankwolfe}. Cỡ bước của Thuật toán GD là $\lambda = 1/L$, và cỡ bước ban đầu của Thuật toán GDA là $\lambda_0 = 5/L$.
 
 Hai kết quả thực nghiệm dưới đây cho thấy rằng với cỡ bước được chọn dựa theo hằng số Lipschitz $L$, cả hai thuật toán đều hội tụ rất nhanh (không quá 20 vòng lặp). Nguyên nhân cụ thể dẫn đến tốc độ hội tụ này vẫn là một vấn đề mở cần được nghiên cứu thêm.
 

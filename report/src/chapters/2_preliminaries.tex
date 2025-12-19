@@ -1,0 +1,58 @@
+\section{Cơ sở lý thuyết}
+\label{sec:preliminaries}
+
+Trong toàn bộ bài báo \cite{thang2024saaqp}, ta giả định rằng $C$ là một tập khác rỗng, đóng và lồi trong $\mathbb{R}^{m}$, $f:\mathbb{R}^{m}\rightarrow \mathbb{R}$ là một hàm khả vi trên một tập mở chứa $C$, ánh xạ $\nabla f$ liên tục Lipschitz, tức là tồn tại một hằng số $L>0$ sao cho $||\nabla f(x)-\nabla f(y)||\le L||x-y||$ với mọi $x$, $y\in C$. Ta xét bài toán tối ưu:
+\begin{equation} \label{eq:OP}
+    \min_{x\in C}f(x). \tag{OP(f, C)}
+\end{equation}
+
+Giả sử rằng tập nghiệm của \ref{eq:OP} là không rỗng. Trước hết, ta nhắc lại một số định nghĩa và kết quả cơ bản sẽ được sử dụng trong phần tiếp theo của bài báo \cite{thang2024saaqp}. Chứng minh chi tiết được trình bày trong \cite{bauschke2011convex} và \cite{rockafellar1970convex}. 
+
+Với $x\in\mathbb{R}^{m}$, ký hiệu $P_{C}(x)$ là hình chiếu của $x$ lên $C$, tức là:
+\begin{equation}
+    P_{C}(x):=\text{argmin}\{||z-x||:z\in C\}. \nonumber
+\end{equation}
+
+\begin{proposition}[Bauschke và Combettes \cite{bauschke2011convex}] \label{prop:1}
+    Ta có
+    \begin{enumerate}
+        \item[(i)] $||P_{C}(x)-P_{C}(y)||\le||x-y||$ với mọi $x$, $y\in\mathbb{R}^{m}$,
+        \item[(ii)] $\langle y-P_{C}(x), x-P_{C}(x)\rangle\le0$ với mọi $x\in\mathbb{R}^{m}$, $y\in C$.
+    \end{enumerate}
+\end{proposition}
+
+\begin{definition}[Mangasarian \cite{mangasarian1965pseudoconvex}] \label{def:1}
+    Hàm $f:\mathbb{R}^{m}\rightarrow\mathbb{R}$ được gọi là:
+    \begin{itemize}
+        \item lồi trên $C$ nếu với mọi $x$, $y\in C$, $\lambda\in[0,1]$, thỏa mãn rằng
+        \[ f(\lambda x+(1-\lambda)y)\le\lambda f(x)+(1-\lambda)f(y). \]
+        \item giả lồi trên $C$ nếu với mọi $x$, $y\in C$, thỏa mãn rằng
+        \[ \langle\nabla f(x),y-x\rangle\ge0\Rightarrow f(y)\ge f(x). \]
+        \item tựa lồi trên $C$ nếu với mọi $x$, $y\in C$, $\lambda\in[0;1]$, thỏa mãn rằng
+        \[ f(\lambda x+(1-\lambda)y)\le \max\{f(x);f(y)\}. \]
+    \end{itemize}
+\end{definition}
+
+\begin{proposition}[Dennis và Schnabel \cite{dennis1983numerical}] \label{prop:2}
+    Hàm khả vi $f$ là tựa lồi trên $C$ khi và chỉ khi
+    \begin{equation}
+        f(y)\le f(x)\Rightarrow\langle\nabla f(x),y-x\rangle\le0. \nonumber
+    \end{equation}
+\end{proposition}
+
+Đáng chú ý là ``$f$ là lồi'' $\Rightarrow$ ``$f$ là giả lồi'' $\Rightarrow$ ``$f$ là tựa lồi'' (xem Mangasarian \cite{mangasarian1965pseudoconvex}).
+
+\begin{proposition}[Dennis và Schnabel \cite{dennis1983numerical}] \label{prop:3}
+    Giả sử rằng $\nabla f$ liên tục Lipschitz trên $C$. Với mọi $x$, $y\in C$, ta có
+    \begin{equation} \label{eq:lipschitz}
+        |f(y)-f(x)-\langle\nabla f(x),y-x\rangle|\le\frac{L}{2}||y-x||^{2}. \nonumber
+    \end{equation}
+\end{proposition}
+
+\begin{lemma}[Xu \cite{xu2002iterative}] \label{lemma:1}
+    Cho $\{a_k\}$; $\{b_{k}\}\subset(0;\infty)$ là các dãy sao cho
+    \begin{equation}
+        a_{k+1}\le a_{k}+b_{k}\ \forall k\ge0; \ \sum_{k=0}^{\infty}b_{k}<\infty. \nonumber
+    \end{equation}
+    Khi đó, tồn tại giới hạn $\lim_{k\rightarrow\infty}a_{k}=c\in\mathbb{R}$.
+\end{lemma}

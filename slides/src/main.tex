@@ -1,1 +1,783 @@
-%% Team 3 viet slides tai day
+\documentclass{beamer}
+\usepackage{subcaption}
+\setbeamertemplate{footline}[frame number]
+\usetheme{Madrid}
+\usepackage[utf8]{vietnam}
+
+\title[GDA] %optional
+{Thuật toán tự thích nghi cho lập trình tựa lồi
+và ứng dụng trong học máy}
+
+\author[Nhóm 1] % (optional, for multiple authors)
+{Trần Ngọc Thăng\inst{1} \and Trịnh Ngọc Hải\inst{1}}
+
+\institute[] % (optional)
+{
+  \inst{1}%
+  Khoa Toán - Tin \\ Đại học Bách Khoa Hà Nội, Hai Bà Trưng, Hà Nội, Việt Nam
+}
+\date{\vspace{-5ex}}
+
+
+\begin{document}
+
+
+\frame{\titlepage}
+
+\begin{frame}
+\frametitle{Thông tin nhóm}
+\begin{flushleft}
+\textbf{Nhóm thuyết trình:} Nhóm 1 \\
+\textbf{Các thành viên:}\\
+\begin{tabular}{ll}
+Nguyễn Ngọc Tuấn Anh  & 202400029 \\
+Trần Tuấn Anh         & 202416124 \\
+Nguyễn Hữu Chính      & 202416143 \\
+Trần Mạnh Cường       & 202416147 \\
+Đỗ Hải Đăng           & 202400035 \\
+Bùi Tuấn Đạt          & 202400096 \\
+Nguyễn Hồng Đạt       & 202416153 \\
+Phạm Đình Minh Đức    & 202400038 \\
+Bùi Tiến Dũng         & 202416167 \\
+Trần Huy Dương        & 20230025  \\
+Nguyễn Khắc Duy       & 202400100 \\
+Nguyễn Hoàng Gia      & 202400040 \\
+\end{tabular}
+\end{flushleft}
+
+\end{frame}
+
+\AtBeginSection[]
+{
+\begin{frame}
+\frametitle{Mục lục}
+\tableofcontents[currentsection]
+\end{frame}
+}
+
+
+\section{Giới thiệu chung}
+\subsection{Đặt vấn đề}
+\begin{frame}{Đặt vấn đề}
+    \begin{itemize}
+        \item \textbf{Vai trò của GD:} Là công cụ phổ biến giải quyết các bài toán quy hoạch từ lồi đến không lồi, với nhiều ứng dụng thực tế. \cite{boyd2009convex} \cite{cevher2014convex} \cite{lan2020first}
+        \item \textbf{Thực trạng:} Các bài toán học máy thường có số chiều lớn và hàm mục tiêu \textbf{không lồi}. \cite{cevher2014convex} \cite{lan2020first}
+        \item \textbf{Hạn chế của một số phương pháp hiện tại:}
+        \begin{itemize}
+            \item Line-search (Tìm kiếm theo tia): Chi phí tính toán quá lớn cho mỗi lần lặp, đặc biệt khi tính giá trị hàm phức tạp. \cite{boyd2009convex}
+            \item Sử dụng hằng số Lipschitz (biết trước): Dẫn đến hội tụ chậm do chỉ dùng một phần ước lượng không chính xác, hoặc thông tin này không có sẵn. \cite{kiwiel2001convergence} \cite{nesterov2013introductory}
+            \item Độ dài bước giảm dần (Diminishing step-size): Gây ra tốc độ hội tụ chậm (ví dụ: phương pháp của Kiwiel cho quy hoạch tựa lồi). \cite{kiwiel2001convergence}
+        \end{itemize}
+    \end{itemize}
+   
+   
+
+\end{frame}
+\subsection{Phương pháp Gradient Descent Adaptive}
+
+\begin{frame}{PPhương pháp Gradient Descent Adaptive \cite{thang2024saaqp}}
+    \begin{itemize}
+        \item \textbf{Mục tiêu:} Đề xuất thuật toán độ dài bước tự thích ứng mới.
+        
+        \item \textbf{Phạm vi áp dụng:}
+        \begin{itemize}
+            \item Hàm mục tiêu: Không lồi và trơn.
+            \item Tập ràng buộc: Không bị chặn, đóng và lồi.
+        \end{itemize}
+        
+        \item \textbf{Cơ chế hoạt động:} Giảm dần độ dài bước một cách ổn định cho đến khi thỏa mãn một điều kiện xác định, không cần biết trước hằng số Lipschitz.
+        
+        \item \textbf{Ứng dụng:} Hiệu quả cho các bài toán quy mô lớn như hồi quy logistic đa biến và mạng nơ-ron.
+    \end{itemize}
+\end{frame}
+
+
+
+\section{Kiến thức nền tảng}
+
+
+\subsection{Thiết lập bài toán}
+\begin{frame}{Thiết lập bài toán}
+
+    \begin{block}{Bài toán tối ưu hóa tổng quát (OP)}
+        Chúng ta xét bài toán tối ưu hóa tổng quát $(OP(f,C))$:
+        \begin{equation*}
+            \min_{x \in C} f(x)
+        \end{equation*}
+    \end{block}
+    % ----------------------------
+    
+    \vspace{0.3cm}
+    
+    \textbf{Các giả thiết cơ bản:}
+    \begin{itemize}
+       \item $C \subset \mathbb{R}^m$: Là tập \textbf{lồi}, \textbf{đóng} và khác rỗng (có thể không bị chặn).
+        \item $f: \mathbb{R}^m \to \mathbb{R}$: Là hàm khả vi trên tập mở chứa $C$.
+        \item $\nabla f$: Có tính chất \textbf{$L$-Lipschitz liên tục} trên $C$, tức là tồn tại $L > 0$ sao cho:
+        $$ \|\nabla f(x) - \nabla f(y)\| \le L\|x - y\|, \quad \forall x, y \in C $$
+        \item Giả sử tập nghiệm của $(OP(f,C))$ là khác rỗng.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Phép chiếu lên tập lồi}
+    Thuật toán sử dụng phép chiếu $P_C(x)$ để đảm bảo nghiệm luôn nằm trong vùng chấp nhận.
+    
+    \begin{block}{Định nghĩa 1}
+        $$ P_C(x) := \text{argmin} \{ \|z - x\| : z \in C \} $$
+    \end{block}
+
+    \begin{block}{Mệnh đề 1 (Bauschke và Combettes 2011 \cite{bauschke2011convex}) }
+        Với mọi $x, y \in \mathbb{R}^m$ và $z \in C$:
+        \begin{enumerate}
+            \item $\|P_C(x) - P_C(y)\| \le \|x - y\|$ (Tính không giãn).
+            \item $\langle z - P_C(x), x - P_C(x) \rangle \le 0$ (Tính chất biến phân).
+        \end{enumerate}
+    \end{block}
+\end{frame}
+
+
+
+\begin{frame}{Định nghĩa các dạng hàm lồi}
+    
+    \begin{block}{Định nghĩa 2 (Mangasarian (1965) \cite{mangasarian1965pseudoconvex})}
+        Hàm $f$ được gọi là: Với mọi $x, y \in C$ và $\lambda \in [0,1]$.
+        \begin{itemize}
+            \item \textbf{Lồi (Convex):} 
+            $f(\lambda x + (1-\lambda)y) \le \lambda f(x) + (1-\lambda)f(y)$.
+            
+            \item \textbf{Tựa lồi (Quasiconvex):}
+            $f(\lambda x + (1-\lambda)y) \le \max\{f(x); f(y)\}$.
+            
+            \item \textbf{Giả lồi (Pseudoconvex):}
+             $\langle \nabla f(x), y - x \rangle \ge 0 \Rightarrow f(y) \ge f(x) $
+        \end{itemize}
+    \end{block}
+    
+    \vspace{0.2cm}
+    \textbf{Mối quan hệ bao hàm:}
+    $$ \text{Lồi} \implies \text{Giả lồi} \implies \text{Tựa lồi} $$
+\end{frame}
+
+
+\subsection{Các tính chất quan trọng}
+\begin{frame}{Điều kiện của Hàm tựa lồi}
+    Để chứng minh sự hội tụ của thuật toán trên hàm tựa lồi, ta cần tính chất sau:
+    
+    \begin{block}{Mệnh đề 2 (Dennis và Schnabel 1983 \cite{dennis1983numerical}) }
+        Hàm khả vi $f$ là \textbf{tựa lồi} trên $C$ khi và chỉ khi:
+        $$ f(y) \le f(x) \implies \langle \nabla f(x), y - x \rangle \le 0 $$
+    \end{block}
+    
+    \textit{Ý nghĩa:} Nếu giá trị hàm tại $y$ nhỏ hơn tại $x$, thì hướng từ $x$ đến $y$ phải tạo góc tù với gradient tại $x$.
+\end{frame}
+
+\begin{frame}{Bất đẳng thức Descent }
+   
+    \begin{block}{Mệnh đề 3 (Dennis và Schnabel 1983 \cite{dennis1983numerical}) }
+        Giả sử $\nabla f$ là $L$-Lipschitz liên tục trên $C$. Với mọi $x, y \in C$, ta có:
+        \begin{equation*}
+            | f(y) - f(x) - \langle \nabla f(x), y - x \rangle | \le \frac{L}{2} \|y - x\|^2
+        \end{equation*}
+    \end{block}
+    
+    \vspace{0.3cm}
+    \textit{Ý nghĩa:} Bất đẳng thức này chặn trên sai số giữa hàm số $f(y)$ và xấp xỉ tuyến tính của nó tại $x$.
+
+\end{frame}
+\begin{frame}{Bổ đề chứng minh hội tụ}
+    Để chứng minh sự hội tụ của dãy lặp $\{x^k\}$, ta sử dụng bổ đề sau:
+
+    \begin{block}{Bổ đề 1 (Xu 2002 \cite{xu2002iterative}) }
+        Cho các dãy số thực $\{a_k\}, \{b_k\} \subset (0, \infty)$ thỏa mãn điều kiện:
+        \begin{equation*}
+            a_{k+1} \le a_k + b_k, \quad \forall k \ge 0
+        \end{equation*}
+        \text{và tổng chuỗi hội tụ: }
+            $\sum_{k=0}^{\infty} b_k < \infty$
+        
+        \text{Khi đó, tồn tại giới hạn hữu hạn: }
+        $ \lim_{k \to \infty} a_k = c \in \mathbb{R} $
+    \end{block}
+    
+    \vspace{0.2cm}
+    \textit{Vai trò:} Bổ đề này được dùng để xử lý sự nhiễu động trong quá trình lặp, đảm bảo thuật toán vẫn hội tụ dù có sai số nhỏ.
+\end{frame}
+
+\section{Các kết quả chính}
+\subsection{Thuật toán Gradient Descent (GD)}
+
+\begin{frame}{Thuật toán Gradient Descent}
+    \begin{block}{Thuật toán Gradient Descent (GD)}
+        \textbf{Bước 0.} Chọn điểm khởi tạo $x^0 \in C$, tham số bước $\lambda \in (0,2/L)$.  
+        Đặt $k=0$. \\[0.6em]
+        
+        \textbf{Bước 1.} Với $x^k$ đã cho, tính
+        \[
+            x^{k+1} = P_C\big(x^k - \lambda \nabla f(x^k)\big).
+        \]
+        
+        \textbf{Bước 2.}
+        \begin{itemize}
+            \item Nếu $x^{k+1} = x^k$ thì \textbf{dừng}.
+            \item Ngược lại, đặt $k := k+1$, quay lại \textbf{Bước 1}.
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+\begin{frame}{Thuật toán Gradient Descent (GD)}
+  \begin{itemize}
+    \item $x^k$ : nghiệm xấp xỉ tại vòng lặp $k$.
+    \item $-\nabla f(x^k)$ : hướng dốc nhất làm giảm hàm mục tiêu.
+    \item $\lambda$ : bước nhảy (step-size), cố định trong khoảng (0,2/L).
+    \item $P_C$ : phép chiếu lên tập ràng buộc $C$:
+    \item Nếu $C=\mathbb{R}^m$ thì $P_C$ là ánh xạ đồng nhất $\Rightarrow$ GD không ràng buộc.
+  \end{itemize}
+  \vspace{0.5em}
+  \textbf{Ý tưởng chính:}  
+  đi theo hướng $-\nabla f(x^k)$, sau đó kéo nghiệm trở lại miền khả thi $C$.
+\end{frame}
+
+
+% ---------- Subsection: Adaptive Gradient Descent (GDA) ----------
+\subsection{Thuật toán Gradient Descent Adaptive (GDA)}
+
+\begin{frame}{Thuật toán Gradient Descent Adaptive (GDA) \cite{thang2024saaqp}}
+  \begin{block}{Thuật toán GDA}
+    \textbf{Bước 0.} Chọn $x^0\in C$, $\lambda_0>0$, hệ số $\sigma,\kappa\in(0,1)$. Đặt $k:=0$.\\[0.4em]
+    \textbf{Bước 1.} Với $x^k,\lambda_k$ đã cho, tính
+    \[
+      x^{k+1}=P_C\big(x^k-\lambda_k\nabla f(x^k)\big).
+    \]
+    \text{Nếu }
+      $f(x^{k+1}) \le f(x^k)-\sigma\langle\nabla f(x^k),\,x^k-x^{k+1}\rangle$
+    \text{thì} $\lambda_{k+1}:=\lambda_k$, \text{ngược lại }  $\lambda_{k+1}:=\kappa\lambda_k$.\\[0.4em]
+    \textbf{Bước 2.}
+        \begin{itemize}
+            \item Nếu $x^{k+1} = x^k$ thì \textbf{dừng}.
+            \item Ngược lại, đặt $k := k+1$, quay lại \textbf{Bước 1}.
+        \end{itemize}
+  \end{block}
+  \vspace{0.5em}
+  \begin{itemize}
+    \item Ý tưởng: giảm dần cỡ bước một cách ổn định cho đến khi thỏa mãn điều kiện, không cần chi phí tính toán lớn cho hằng số Lipschitz hoặc tìm kiếm theo tia.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Nhận xét}
+    \begin{block}{Chú ý 1} 
+    Nếu thuật toán GDA dừng tại bước $k$, thì $x^k$ là một điểm dừng của bài toán $\mathrm{OP}(f, C)$.
+    \end{block}
+    Thật vậy, vì $x^{k+1} = P_C(x^k - \lambda_k \nabla f(x^k))$, áp dụng Mệnh đề 1-(2), ta có:
+    \begin{equation}
+        \langle z - x^{k+1}, x^k - \lambda_k \nabla f(x^k) - x^{k+1} \rangle \le 0 \quad \forall z \in C. \label{eq:1}
+    \end{equation}
+    
+    Nếu $x^{k+1} = x^k$, ta thu được:
+    \begin{equation}
+        \langle \nabla f(x^k), z - x^k \rangle \ge 0 \quad \forall z \in C, \label{eq:2}
+    \end{equation}
+    điều này có nghĩa là $x^k$ là điểm dừng của bài toán. Hơn nữa, nếu $f$ là hàm giả lồi, từ (\ref{eq:2}) suy ra $f(z) \ge f(x^k)$ với mọi $z \in C$, hay $x^k$ là nghiệm của $\mathrm{OP}(f, C)$.
+
+\end{frame}
+
+% ---------- Subsection: Convergence Theorems ----------
+\subsection{Chứng minh sự hội tụ}
+
+\begin{frame}{Định lý hội tụ của GDA}
+\begin{block}{Định lý}
+\text{Giả sử dãy $\{x^k\}$ được sinh bởi thuật toán GDA. Khi đó: }
+\begin{itemize}
+  \item Dãy $\{f(x^k)\}$ hội tụ và mọi điểm giới hạn (nếu có) của $\{x^k\}$ là 1 điểm dừng của bài toán.
+
+  \item Nếu $f$ \textbf{tựa lồi} trên $C$ thì $\{x^k\}$ hội tụ tới 1 điểm dừng của bài toán.
+
+  \item Nếu $f$ \textbf{giả lồi} trên $C$ thì $\{x^k\}$ hội tụ tới 1 nghiệm của bài toán.
+\end{itemize}
+\end{block}
+\end{frame}
+
+
+
+\begin{frame}{Chứng minh định lý }
+\begin{block}{}
+Dãy $\{f(x^k)\}$ hội tụ và mọi điểm giới hạn (nếu có) của $\{x^k\}$ là 1 điểm dừng của bài toán.
+\end{block}
+
+\textbf{Chứng minh.} Áp dụng Mệnh đề 3, ta có:
+    \begin{equation}
+        f(x^{k+1}) \leq f(x^k) + \langle \nabla f(x^k), x^{k+1} - x^k \rangle + \frac{L}{2}\|x^{k+1} - x^k\|^2. \label{eq:3}
+    \end{equation}
+
+    Trong \eqref{eq:1}, chọn $z = x^k \in C$, ta thu được:
+    \begin{equation}
+        \langle \nabla f(x^k), x^{k+1} - x^k \rangle \leq -\frac{1}{\lambda_k}\|x^{k+1} - x^k\|^2.
+        \label{eq:4}
+    \end{equation}
+
+    Kết hợp \eqref{eq:3} và \eqref{eq:4}, ta thu được:
+    \begin{equation}
+        f(x^{k+1}) \leq f(x^k) - \sigma \langle \nabla f(x^k), x^k - x^{k+1} \rangle - \left( \frac{1-\sigma}{\lambda_k} - \frac{L}{2} \right) \|x^{k+1} - x^k\|^2. \label{eq:5}
+    \end{equation}
+
+
+
+    
+\end{frame}
+\begin{frame}{Chứng minh định lý}
+
+    Ta sẽ chứng minh rằng dãy $\{\lambda_k\}$ bị chặn dưới bởi một số dương, hay nói cách khác, độ dài bước nhảy chỉ thay đổi hữu hạn lần. 
+    
+    Thật vậy, giả sử phản chứng rằng $\lambda_k \to 0$. Từ \eqref{eq:5}, tồn tại $k_0 \in \mathbb{N}$ thỏa mãn:
+    \begin{equation}
+        f(x^{k+1}) \leq f(x^k) - \sigma \langle \nabla f(x^k), x^k - x^{k+1} \rangle \quad \forall k \geq k_0. \label{eq:6}
+    \end{equation}
+
+    Theo cách xây dựng của $\lambda_k$, bất đẳng thức trên kéo theo rằng $\lambda_k = \lambda_{k_0}$ với mọi $k \geq k_0$. Điều này là mâu thuẫn. 
+    
+    Do đó, tồn tại $k_1 \in \mathbb{N}$ sao cho với mọi $k \geq k_1$, ta có $\lambda_k = \lambda_{k_1}$ và:
+    \begin{equation}
+        f(x^{k+1}) \leq f(x^k) - \sigma \langle \nabla f(x^k), x^k - x^{k+1} \rangle. \label{eq:7}
+    \end{equation}
+    Lưu ý rằng $\langle \nabla f(x^k), x^k - x^{k+1} \rangle \geq 0$, ta suy ra dãy $\{f(x^k)\}$ hội tụ và:
+    \begin{equation}
+        \sum_{k=0}^{\infty} \langle \nabla f(x^k), x^k - x^{k+1} \rangle < \infty; \quad \sum_{k=0}^{\infty} \|x^{k+1} - x^k\|^2 < \infty
+        \label{eq:8}
+    \end{equation}
+\end{frame}
+
+
+\begin{frame}{Chứng minh định lý}
+Từ \eqref{eq:1}, với mọi $z \in C$, ta có
+\begin{equation}
+\begin{aligned}
+\|x^{k+1} - z\|^2 &= \|x^k - z\|^2 - \|x^{k+1} - x^k\|^2 + 2\langle x^{k+1} - x^k, x^{k+1} - z \rangle \\
+&\le \|x^k - z\|^2 - \|x^{k+1} - x^k\|^2 + 2\lambda_k \langle \nabla f(x^k), z - x^{k+1} \rangle. \label{eq:9}
+\end{aligned}
+\end{equation}
+
+Giả sử $\bar{x}$ là một điểm tụ của dãy $\{x^k\}$. Tồn tại một dãy con $\{x^{k_i}\} \subset \{x^k\}$ sao cho $\lim_{i \to \infty} x^{k_i} = \bar{x}$. Với bất đẳng thức trên cho $k = k_i$ và lấy giới hạn khi $i \to \infty$. Chú ý rằng $\|x^k - x^{k+1}\| \to 0$, và $\nabla f$ là hàm liên tục, ta nhận được
+\begin{equation}
+\langle \nabla f(\bar{x}), z - \bar{x} \rangle \ge 0 \quad \forall z \in C, \label{eq:10}
+\end{equation}
+
+Do đó $\bar x$ là điểm dừng.
+\end{frame}
+
+
+
+\begin{frame}{Chứng minh định lý}
+\begin{block}{}
+    Nếu $f$ \textbf{tựa lồi} trên $C$ thì $\{x^k\}$ hội tụ tới 1 điểm dừng của bài toán.
+\end{block}
+\vspace{0.6em} Đặt
+$$
+U := \left\{x \in C : f(x) \le f(x^k) \quad \forall k \ge 0\right\}.
+$$
+Vì $U$ chứa tập nghiệm của $OP(f, C)$, và do đó, $U$ không rỗng. Lấy $\hat{x} \in U$. Vì $f(x^k) \ge f(\hat{x})$ với mọi $k \ge 0$ và $f$ là hàm tựa lồi nên
+\begin{equation}
+\langle \nabla f(x^k), \hat{x} - x^k \rangle \le 0 \quad \forall k \ge 0. \label{eq:11}
+\end{equation}
+Kết hợp \eqref{eq:9} và \eqref{eq:11}, ta có
+\begin{equation}
+\|x^{k+1} - \hat{x}\|^2 \le \|x^k - \hat{x}\|^2 - \|x^{k+1} - x^k\|^2 + 2\lambda_k \langle \nabla f(x^k), x^k - x^{k+1} \rangle. \label{eq:12}
+\end{equation}
+Áp dụng Bổ đề 1 với $a_k = \|x^{k} - \hat{x}\|^2$, $b_k = 2\lambda_k \langle \nabla f(x^k), x^k - x^{k+1} \rangle$, ta suy ra rằng dãy $\{\|x^k - \hat{x}\|\}$ hội tụ với mọi $\hat{x} \in U$. 
+\end{frame}
+
+\begin{frame}{Chứng minh định lý}
+Lại có dãy $\{x^k\}$ bị chặn, tồn tại một dãy con $\{x^{k_i}\} \subset \{x^k\}$ sao cho $$\lim_{i \to \infty} x^{k_i} = \bar{x} \in C$$Ta có dãy $\{f(x^k)\}$ là dãy không tăng và hội tụ. Nên $\lim_{k \to \infty} f(x^k) = f(\bar{x})$ và $f(\bar{x}) \le f(x^k)$ với mọi $k \ge 0$. Do đó $\bar{x} \in U$ và dãy $\{\|x^k - \bar{x}\|\}$ hội tụ. Từ đó suy ra,
+$$
+\lim_{k \to \infty} \|x^k - \bar{x}\| = \lim_{i \to \infty} \|x^{k_i} - \bar{x}\| = 0.
+$$
+Ta đã có mỗi điểm tụ của $\{x^k\}$ là một điểm dừng của bài toán. Khi đó, toàn bộ dãy $\{x^k\}$ hội tụ đến $\bar{x}$ - một điểm dừng của bài toán.
+\end{frame}
+
+\begin{frame}{Chứng minh định lý}
+\begin{block}{}
+    Nếu $f$ \textbf{giả lồi} trên $C$ thì $\{x^k\}$ hội tụ tới 1 nghiệm của bài toán.
+\end{block}
+Từ \eqref{eq:10} có: $\langle \nabla f(\bar{x}), z - \bar{x} \rangle \ge 0 \quad \forall z \in C$ \\
+\text{Do f là giả lồi nên } $f(\bar{x}) \le f(z) \quad \forall z \in C $\\
+\text{Do đó $\{x^k\}$ hội tụ tới 1 nghiệm của bài toán.}
+\end{frame}
+
+\begin{frame}{Thuật toán Gradient Descent Adaptive (GDA)}
+  \begin{block}{Chú ý 2}
+     \text{Với mọi} \lambda \in (0, 2/L) \text{ luôn tồn tại } \sigma \in (0,1) \text{ sao cho } \lambda \le 2(1-\sigma)/L. \\
+     Khi đó chọn \lambda_0 \in (0, 2(1-\sigma)/L) \text{ thì }  \lambda_k = \lambda_0 \text{ với mọi k.}
+  \end{block}
+  \vspace{0.6em}
+  \begin{itemize}
+    \item Như vậy GD là 1 trường hợp đặc biệt của GDA.
+    \item Nếu $L$ biết trước có thể chọn $\lambda$ cố định thì theo định lý trên thuật toán vẫn hội tụ.
+    \item Mọi khẳng định của định lý trên vẫn đúng với dãy $\{x^k\}$ được sinh ra bởi Thuật toán GD.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Sự hội tụ của GDA}
+    Bây giờ, chúng ta sẽ ước lượng tốc độ hội tụ của Thuật toán GDA khi giải các bài toán tối ưu không ràng buộc.
+
+    \begin{block}
+        Giả sử $f$ là hàm lồi, $C = \mathbb{R}^m$ và $\{x^k\}$ là dãy được sinh ra bởi Thuật toán GDA. Khi đó,
+        $$
+        f(x^k) - f(x^*) = O\left(\frac{1}{k}\right),
+        $$
+        trong đó $x^*$ là một nghiệm của bài toán.
+    \end{block}
+
+    \textbf{Chứng minh:} Gọi $x^*$ là một nghiệm của bài toán. Đặt $\Delta_k := f(x^k) - f(x^*)$. Từ \eqref{eq:6}, lưu ý rằng $x^k - x^{k+1} = \lambda_k \nabla f(x^k)$, ta có:
+    \begin{equation}
+        \Delta_{k+1} \leq \Delta_k - \sigma \lambda_{k_1} \|\nabla f(x^k)\|^2 \quad \forall k \geq k_1. \label{eq:13}
+    \end{equation}
+\end{frame}
+
+\begin{frame}{Sự hội tụ của GDA}
+    Mặt khác, vì dãy $\{x^k\}$ bị chặn và $f$ là hàm lồi, ta có:
+    \begin{equation}
+        \begin{aligned}
+            0 \leq \Delta_k & \leq \langle \nabla f(x^k), x^k - x^* \rangle \\
+                            & \leq M \|\nabla f(x^k)\|,
+        \end{aligned}
+        \label{eq:14}
+    \end{equation}
+    trong đó $M := \sup \left\{ \|x^k - x^*\| : k \geq k_1 \right\} < \infty$. Từ \eqref{eq:13} và \eqref{eq:14}, ta thu được:
+    \begin{equation}
+        \Delta_{k+1} \leq \Delta_k - Q \Delta_k^2 \quad \forall k \geq k_1 \label{eq:15}
+    \end{equation}
+    với $Q := \frac{\sigma \lambda_{k_1}}{M^2}$. Lưu ý rằng $\Delta_{k+1} \leq \Delta_k$, từ \eqref{eq:15}, ta có:
+    $$
+    \frac{1}{\Delta_{k+1}} \geq \frac{1}{\Delta_k} + Q \geq \dots \geq \frac{1}{\Delta_{k_1}} + (k - k_1)Q,
+    $$
+    điều này suy ra
+    $$
+    f(x^k) - f(x^*) = O\left(\frac{1}{k}\right).
+    $$
+\end{frame}
+
+% ---------- Subsection: Stochastic variation & Implementation ----------
+\subsection{Biến thể stochastic (SGDA)}
+
+\begin{frame}{Stochastic Gradient Descent Adaptive Algorithm-SGDA}
+    \begin{block}{Thuật toán GD Thích nghi Ngẫu nhiên (SGDA)}
+        \small 
+        \textbf{Bước 0.} Chọn $x^0 \in C$, $\lambda_0 \in (0, +\infty)$, $\sigma, \kappa \in (0, 1)$. Đặt $k=0$. \\[0.5em]
+        
+        \textbf{Bước 1.} Lấy mẫu $\xi^k$ và tính $x^{k+1}$ cùng $\lambda_{k+1}$:
+        \[
+            x^{k+1} = P_C(x^k - \lambda_k \nabla f_{\xi^k}(x^k))
+        \]
+        \textbf{Nếu} $f_{\xi^k}(x^{k+1}) \leq f_{\xi^k}(x^k) - \sigma \langle \nabla f_{\xi^k}(x^k), x^k - x^{k+1} \rangle$ \\
+        \textbf{thì} $\lambda_{k+1} := \lambda_k$; \textbf{ngược lại} $\lambda_{k+1} := \kappa \lambda_k$. \\[0.5em]
+        
+        \textbf{Bước 2.}
+        \begin{itemize}
+            \item Nếu $x^{k+1} = x^k$ thì \textbf{dừng}.
+            \item Ngược lại, đặt $k := k+1$, quay lại \textbf{Bước 1}.
+        \end{itemize}
+    \end{block}
+\end{frame}
+
+
+
+\section{Kết quả thực nghiệm}
+\subsection{Thực nghiệm toán học}
+
+\begin{frame}{Thực nghiệm toán học}
+    \begin{block}{Ví dụ 1 (Ví dụ 5.2, Liu et. al., 2022) \cite{liu2022one}}
+        Xét bài toán (P):
+        \[
+        \begin{aligned}
+            &\text{min} \ f(x) = \frac{x_1^2 + x_2^2 + 3}{1 + 2x_1 + 8x_2} \\
+            &\text{v.đ.k } x \in C,
+        \end{aligned}
+        \]
+        với C = \{ x = (x_1, x_2)^\top \in \mathbb{R}^2 
+        \mid g_1(x) = -x_1^2 - 2x_1x_2 \le -4,\; x_1, x_2 \ge 0 \}. \\
+        &\text{Hàm mục tiêu \( f\) là giả lồi trên tập lồi C.}   
+    \end{block}
+
+    \begin{table}
+    \centering
+    \begin{tabular}{|l|c|c|}
+    \hline
+    \textbf{Thuật toán} & \textbf{f(x*)} & \textbf{#Iter} \\ \hline
+    GDA & 0.40935 & 130 \\ \hline
+    GD & 0.40935 & 910 \\ \hline
+    \end{tabular}
+    \end{table}
+
+\end{frame}
+
+\begin{frame}{Thực nghiệm toán học}
+
+\begin{figure}
+    \centering
+
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ex11.png}
+        \caption{GD}
+        \label{fig:gd_ex1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ex12.png}
+        \caption{GDA}
+        \label{fig:gda_ex1}
+    \end{subfigure}
+
+    \caption{Kết quả chạy thực nghiệm \emph{ví dụ 1}}
+    \label{fig:ex1}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{Thực nghiệm toán học}
+    \begin{block}{Ví dụ 2 (Ví dụ 5.1, Liu et. al., 2022 \cite{liu2022one})}
+        Xét bài toán tối ưu giả lồi không trơn sau đây:
+        \[
+        \begin{aligned}
+        \text{min} \quad & f(x)=\frac{e^{|x_2-3|}-30}{x_1^2 + x_3^2 + 2x_4^2 + 4}, \\
+        \text{v.đ.k} \quad 
+        & g_1(x) = (x_1 + x_3)^3 + 2x_4^2 \le 10, \\
+        & g_2(x) = (x_2 - 1)^2 \le 1, \\
+        & 2x_1 + 4x_2 + x_3 = -1,
+        \end{aligned}
+        \]
+        trong đó \(x = (x_1, x_2, x_3, x_4)^\top \in \mathbb{R}^4\).
+        Hàm mục tiêu f(x) là hàm giả lồi không trơn trên miền C.
+    \end{block}
+    
+\end{frame}
+
+\begin{frame}{Thực nghiệm toán học}
+    \begin{figure}
+    \centering
+
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ex21.png}
+        \label{fig:gd_ex1}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{ex22.png}
+        \label{fig:gda_ex1}
+    \end{subfigure}
+
+    \caption{Kết quả chạy thực nghiệm \emph{ví dụ 2}}
+    \label{fig:ex1}
+\end{figure}
+
+    \begin{table}
+    \centering
+    \begin{tabular}{|l|c|c|}
+    \hline
+    \textbf{Thuật toán} & \textbf{f(x*)} & \textbf{#Iter} \\ \hline
+    GDA & -3.0908 & 110 \\ \hline
+    GD & -3.0908 & 150 \\ \hline
+    \end{tabular}
+    \end{table}
+    
+\end{frame}
+
+\begin{frame}{Thực nghiệm toán học}
+    \begin{block}{Ví dụ 3 (Ví dụ 4.5, Ferreira et. al., 2022 \cite{ferreira2022frankwolfe})} 
+        Cho $e := (1,\ldots,n) \in \mathbb{R}^n$ là một vector, 
+        $\alpha > 0$ và $\beta > 0$ là các hằng số thỏa mãn $ 2\alpha > 3\beta^{3/2}\sqrt{n}. $
+        Xét bài toán (P) với hàm liên quan:
+        \[
+            f(x) := a^\top x + \alpha x^\top x 
+            + \frac{\beta}{\sqrt{1 + \beta x^\top e}}\, e^\top x,
+        \]
+        với $a \in \mathbb{R}^n_{++}$ và tập ràng buộc không lồi $C := \{ x \in \mathbb{R}^n_{++} : 1 \le x_1 \cdots x_n \}$
+           
+        
+    \end{block}
+    \text{Kết quả chạy thực nghiệm \emph{ví dụ 3} với \beta = 0.741271, \alpha = 4\beta^{3/2}\sqrt{n+1}.}
+    
+\end{frame}
+\begin{frame}{Thực nghiệm toán học}
+    \begin{figure}[!htbp]
+      \centering
+      {\includegraphics[width = 1\linewidth]{ex31.png}}
+      \caption{GDA với $\lambda_0 = 5/L $.}\label{fig:ex3}
+    \end{figure}
+    
+\end{frame}
+\begin{frame}{Thực nghiệm toán học}
+    \begin{figure}[!htbp]
+      \centering
+      {\includegraphics[width = 1\linewidth]{ex32.png}}
+      \caption{GDA với $\lambda_0 = 2/L $.}\label{fig:ex3}
+    \end{figure}
+    
+\end{frame}
+\begin{frame}{Thực nghiệm toán học}
+    \begin{figure}[!htbp]
+      \centering
+      {\includegraphics[width = 1\linewidth]{ex33.png}}
+      \caption{GDA với $\lambda_0 = 0.5 $.}\label{fig:ex3}
+    \end{figure}
+    
+\end{frame}
+\begin{frame}{Thực nghiệm toán học}
+    \begin{figure}[!htbp]
+      \centering
+      {\includegraphics[width = 1\linewidth]{ex34.png}}
+      \caption{GDA với $\lambda_0 = 0.2 $.}\label{fig:ex3}
+    \end{figure}
+    
+\end{frame}
+
+\subsection{Ứng dụng trong học máy}
+
+% --- Slide Tổng quan ---
+\begin{frame}{Ứng dụng trong học máy}
+    Phương pháp đề xuất được đánh giá qua 03 bài toán phổ biến trong Machine Learning để chứng minh hiệu quả tính toán và độ chính xác:
+    \begin{enumerate}
+        \item \textbf{Lựa chọn đặc trưng có giám sát (Supervised feature selection):}
+        \item \textbf{Hồi quy Logistic đa biến (Multi-variable logistic regression):}
+        \item \textbf{Phân loại ảnh với Mạng nơ-ron (Neural networks for classification):}
+    \end{enumerate}
+    Các bài toán trên được mô hình hóa dưới dạng các bài toán tối ưu.
+\end{frame}
+
+% --- Slide 1: Chọn đặc trưng ---
+\begin{frame}{ Lựa chọn đặc trưng có giám sát \cite{wang2021neurodynamic}}
+    \begin{itemize}
+        \item \textbf{Mô hình:} Tối thiểu hóa hàm phân thức giả lồi trên tập lồi 
+        \begin{equation*}
+\begin{aligned}
+& \text{minimize} \quad \frac{w^T Q w}{\rho^T w} \\
+& \text{với điều kiện} \quad e^T w = 1 ; w \ge 0,
+\end{aligned}
+\end{equation*}
+\begin{itemize}
+        \item $w$: Vector trọng số đặc trưng cần tìm (Feature score).
+        \item $Q$: Ma trận dư thừa thông tin.
+        \item $\rho$: Vector mức độ liên quan đến nhãn.
+        \item $e$: Vector đơn vị $(1, \dots, 1)^T$, ràng buộc tổng trọng số $=1$.
+    \end{itemize}
+        \item \textbf{Dữ liệu:} Tập dữ liệu Parkinsons (23 đặc trưng, 195 mẫu).
+        \item \textbf{So sánh:} Thuật toán GDA đề xuất với Thuật toán mạng nơ-ron động (RNN).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Lựa chọn đặc trưng có giám sát\cite{wang2021neurodynamic}}
+    \begin{figure}
+        \centering
+        \includegraphics[width=\linewidth]{feat.png}
+        \caption{Time qua các vòng lặp.}
+    \end{figure}
+\end{frame}
+
+% --- Slide 2: Hồi quy Logistic ---
+\begin{frame}{ Hồi quy Logistic đa biến \cite{malitsky2020adaptive}}
+    \begin{itemize}
+        \item \textbf{Bài toán:} Tối ưu hàm mất mát Cross-entropy có điều chuẩn $L_2$ (Convex programming).
+        \item \textbf{Dữ liệu:} Mushrooms và W8a.
+        \item \textbf{So sánh:} 
+            \begin{itemize}
+                \item Gradient Descent (GD) truyền thống.
+                \item Phương pháp tăng tốc Nesterov.
+            \end{itemize}
+        \item \textbf{Nhận xét:} 
+            \begin{itemize}
+                \item GDA cho giá trị hàm mục tiêu tốt hơn qua các vòng lặp so với GD và Nesterov trên cả 2 tập dữ liệu.
+                \item Cỡ bước tự thích nghi giảm dần theo thời gian giúp hội tụ ổn định.
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+\begin{frame}{Hồi quy Logistic đa biến\cite{malitsky2020adaptive}}
+    \begin{figure}
+        \centering
+    
+        \begin{subfigure}{0.49\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{lg1.png}
+            \caption{Mushrooms}
+            \label{fig:gd_ex1}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}{0.49\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{lg2.png}
+            \caption{W8a}
+            \label{fig:gda_ex1}
+        \end{subfigure}
+    
+        \caption{Kết quả chạy thực nghiệm \emph{Hồi quy Logistic đa biến.}}
+        \label{fig:ex1}
+    \end{figure}
+\end{frame}
+
+% --- Slide 3: Phân loại ảnh ---
+\begin{frame}{ Phân loại ảnh với Mạng nơ-ron}
+    \begin{block}{Thiết lập thực nghiệm}
+        \begin{itemize}
+            \item \textbf{Mô hình:} Kiến trúc ResNet-18.
+            \item \textbf{Dữ liệu:} CIFAR-10 (Dữ liệu ảnh).
+            \item \textbf{Thuật toán:} Sử dụng biến thể ngẫu nhiên \textbf{SGDA} (do hàm mục tiêu không lồi/không giả lồi).
+        \end{itemize}
+    \end{block}
+    
+    \begin{block}{Nhận xét khi so sánh với SGD }
+        \begin{itemize}
+            \item \textbf{Test Accuracy:} SGDA đạt độ chính xác kiểm tra cao hơn qua các vòng lặp.
+            \item \textbf{Training Loss:} SGDA giảm hàm mất mát huấn luyện tốt hơn so với SGD.
+            \item \textit{Lưu ý:} Dù không đảm bảo hội tụ lý thuyết mạnh như trường hợp lồi, SGDA vẫn hoạt động hiệu quả như một kỹ thuật heuristic.
+        \end{itemize}
+    \end{block}
+\end{frame}
+\begin{frame}{Phân loại ảnh với mạng nơ-ron}
+    \begin{figure}
+        \centering
+        \includegraphics[width=\linewidth]{nn_tl.png}
+        \caption{Training loss qua các vòng lặp.}
+    \end{figure}
+\end{frame}
+\begin{frame}{Phân loại ảnh với mạng nơ-ron}
+    \begin{figure}
+        \centering
+        \includegraphics[width=\linewidth]{nn_ta.png}
+        \caption{Test Accuracy qua các vòng lặp.}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Phân loại ảnh với mạng nơ-ron}
+    \begin{figure}
+        \centering
+        \includegraphics[width=\linewidth]{lr.png}
+        \caption{Learning rate qua các vòng lặp.}
+    \end{figure}
+\end{frame}
+\begin{frame}{Phân loại ảnh với mạng nơ-ron}
+    \begin{figure}
+        \centering
+        \includegraphics[width=\linewidth]{time.png}
+        \caption{Time qua các vòng lặp.}
+    \end{figure}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{Tài liệu tham khảo}
+  \nocite{*}
+  \bibliographystyle{abbrv}
+  \bibliography{references}
+\end{frame}
+
+\begin{frame}{Thông tin liên hệ}
+        \textbf{Nhóm trưởng:} Bùi Tuấn Đạt \\
+		\vspace{0.5cm}
+        
+		\begin{itemize}
+			\item \textbf{Email:} \href{Dat.BT2400096@sis.hust.edu.vn}{Dat.BT2400096@sis.hust.edu.vn}
+			\item \textbf{Github:} \url{https://github.com/tuasananh/NMPPTU-Team1-SAAQP}
+		\end{itemize}
+		
+		\vspace{1cm}
+		\textit{Xin chân thành cảm ơn mọi người đã lắng nghe bài thuyết trình của nhóm!}
+\end{frame}
+\end{document}

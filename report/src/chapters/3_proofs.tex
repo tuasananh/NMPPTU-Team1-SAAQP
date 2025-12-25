@@ -1,0 +1,201 @@
+\section{Các kết quả chính}
+\label{sec:proofs}
+\floatname{algorithm}{Thuật toán}
+\renewcommand{\algorithmicif}{\textbf{Nếu}}
+\renewcommand{\algorithmicthen}{\textbf{thì}}
+\renewcommand{\algorithmicelse}{\textbf{Ngược lại}}
+\algnotext{EndIf}
+
+Trong mục này, chúng tôi trình bày thuật toán được đề xuất và chứng minh sự hội tụ của nó. Dựa trên các mệnh đề và bổ đề đã nêu ở Mục \ref{sec:preliminaries}, bài báo \cite{thang2024saaqp} đưa ra kết quả chính như sau.
+
+\begin{algorithm}[ht!]
+\caption{Thuật toán Thích nghi Gradient Descent (GDA)}
+\begin{algorithmic}[1]
+\State \textbf{Bước 0.} Chọn $x^{0} \in C,\ \lambda_{0} \in (0, +\infty),\ \sigma,\ \kappa \in (0, 1)$. Đặt $k=0$.
+\State \textbf{Bước 1.} Từ $x^{k}$ và $\lambda_{k}$, tính toán $x^{k+1} = P_{C}(x^{k} - \lambda_{k}\nabla f(x^{k}))$.
+\If{$f(x^{k+1}) \le f(x^{k}) - \sigma \langle \nabla f(x^{k}), x^{k} - x^{k+1} \rangle$}
+    \State Đặt $\lambda_{k+1} := \lambda_{k}$
+\Else
+    \State Đặt $\lambda_{k+1} := \kappa\lambda_{k}$
+\EndIf 
+\State \textbf{Bước 2.} Kiểm tra điều kiện dừng
+\If{$x^{k+1} = x^{k}$}
+    \State \text{DỪNG}
+\Else
+    \State \ Cập nhật $k := k + 1$ và quay lại \textbf{Bước 1}.
+\EndIf 
+\end{algorithmic}
+\end{algorithm}
+\FloatBarrier
+
+\begin{remark} \label{rem:1}
+    Nếu Thuật toán GDA dừng tại bước $k$, thì $x^{k}$ là một điểm dừng của bài toán \ref{eq:OP}.
+
+    Thật vậy, vì $x^{k+1} = P_{C}(x^{k} - \lambda_{k}\nabla f(x^{k}))$, áp dụng Mệnh đề \ref{prop:1}-(ii), ta có:
+    \begin{equation} \label{eq:rem1_1}
+        \langle z - x^{k+1}, x^{k} - \lambda_{k}\nabla f(x^{k}) - x^{k+1} \rangle \le 0 \quad \forall z \in C.
+    \end{equation}
+
+    Nếu $x^{k+1} = x^{k}$, ta có:
+    \begin{equation} \label{eq:rem1_2}
+        \langle \nabla f(x^{k}), z - x^{k} \rangle \ge 0 \quad \forall z \in C,
+    \end{equation}
+    điều này có nghĩa là $x^{k}$ là một điểm dừng của bài toán. Bên cạnh đó, nếu $f$ là hàm giả lồi thì từ (\ref{eq:rem1_2}), ta suy ra $f(z) \ge f(x^{k})$ với mọi $z \in C$, hay nói cách khác $x^{k}$ là một nghiệm của bài toán \ref{eq:OP}.
+\end{remark}
+
+Bây giờ, giả sử rằng thuật toán tạo ra một dãy vô hạn. Ta sẽ chứng minh rằng dãy này hội tụ đến một nghiệm của bài toán \ref{eq:OP}.
+
+\begin{theorem} \label{thm:convergence}
+    Giả sử rằng dãy $\{x^{k}\}$ được tạo ra bởi Thuật toán GDA. Khi đó, dãy $\{f(x^{k})\}$ hội tụ và mỗi điểm giới hạn (nếu có) của dãy $\{x^{k}\}$ là một điểm dừng của bài toán. Hơn nữa,
+    \begin{itemize}
+        \item nếu $f$ là tựa lồi trên $C$, thì dãy $\{x^{k}\}$ hội tụ đến một điểm dừng của bài toán.
+        \item nếu $f$ là giả lồi trên $C$, thì dãy $\{x^{k}\}$ hội tụ đến một nghiệm của bài toán.
+    \end{itemize}
+\end{theorem}
+
+\begin{proof}
+    Áp dụng Mệnh đề \ref{prop:3}, ta có
+    \begin{equation} \label{eq:proof_3}
+        f(x^{k+1}) \le f(x^{k}) + \langle \nabla f(x^{k}), x^{k+1} - x^{k} \rangle + \frac{L}{2} \| x^{k+1} - x^{k} \|^{2}.
+    \end{equation}
+
+    Ở (\ref{eq:rem1_1}), lấy $z = x^{k} \in C$, ta có
+    \begin{equation} \label{eq:proof_4}
+        \langle \nabla f(x^{k}), x^{k+1} - x^{k} \rangle \le -\frac{1}{\lambda_{k}} \| x^{k+1} - x^{k} \|^{2}.
+    \end{equation}
+
+    Kết hợp (\ref{eq:proof_3}) và (\ref{eq:proof_4}), ta thu được
+    \begin{equation} \label{eq:proof_5}
+        f(x^{k+1}) \le f(x^{k}) - \sigma \langle \nabla f(x^{k}), x^{k} - x^{k+1} \rangle - \left( \frac{1 - \sigma}{\lambda_{k}} - \frac{L}{2} \right) \| x^{k+1} - x^{k} \|^{2}.
+    \end{equation}
+
+    Bây giờ ta khẳng định rằng $\{\lambda_{k}\}$ không tiến về 0, hay nói cách khác, kích thước cỡ bước thay đổi hữu hạn lần. Thật vậy, giả sử ngược lại rằng $\lambda_{k} \to 0$. Từ (\ref{eq:proof_5}), tồn tại $k_{0} \in \mathbb{N}$ thỏa mãn
+    \[ f(x^{k+1}) \le f(x^{k}) - \sigma \langle \nabla f(x^{k}), x^{k} - x^{k+1} \rangle \quad \forall k \ge k_{0}. \]
+
+    Theo cách xây dựng $\lambda_{k}$, bất đẳng thức cuối cùng cho ta thấy rằng $\lambda_{k} = \lambda_{k_{0}}$ với mọi $k \ge k_{0}$. Điều này là mâu thuẫn. Và do đó, tồn tại $k_{1} \in \mathbb{N}$ sao cho với mọi $k \ge k_{1}$, ta có $\lambda_{k} = \lambda_{k_{1}}$ và
+    \begin{equation} \label{eq:proof_6}
+        f(x^{k+1}) \le f(x^{k}) - \sigma \langle \nabla f(x^{k}), x^{k} - x^{k+1} \rangle.
+    \end{equation}
+
+    Lưu ý rằng $\langle \nabla f(x^{k}), x^{k} - x^{k+1} \rangle \ge 0$, ta suy ra rằng dãy $\{f(x^{k})\}$ là hội tụ và
+    \begin{equation}
+        \sum_{k=0}^{\infty} \langle \nabla f(x^{k}), x^{k} - x^{k+1} \rangle < \infty; \quad \sum_{k=0}^{\infty} \| x^{k+1} - x^{k} \|^{2} < \infty.
+    \end{equation}
+
+    Từ (\ref{eq:rem1_1}), với mọi $z \in C$, ta có
+    \begin{align} 
+        \| x^{k+1} - z \|^{2} &= \| x^{k} - z \|^{2} - \| x^{k+1} - x^{k} \|^{2} + 2 \langle x^{k+1} - x^{k}, x^{k+1} - z \rangle \nonumber \\
+        &\le \| x^{k} - z \|^{2} - \| x^{k+1} - x^{k} \|^{2} + 2 \lambda_{k} \langle \nabla f(x^{k}), z - x^{k+1} \rangle. \label{eq:proof_8}
+    \end{align}
+
+    Gọi $\bar{x}$ là một điểm giới hạn của $\{x^{k}\}$. Tồn tại một dãy con $\{x^{k_{i}}\} \subset \{x^{k}\}$ sao cho $\lim_{i \to \infty} x^{k_{i}} = \bar{x}$. Trong (\ref{eq:proof_8}), đặt $k = k_{i}$ và lấy giới hạn khi $i \to \infty$. Lưu ý rằng $\| x^{k} - x^{k+1} \| \to 0$, $\nabla f$ là liên tục, ta có
+    \begin{equation}
+        \langle \nabla f(\bar{x}), z - \bar{x} \rangle \ge 0 \quad \forall z \in C, \nonumber
+    \end{equation}
+    điều này có nghĩa là $\bar{x}$ là một điểm dừng của bài toán. 
+
+    Bây giờ, giả sử rằng $f$ là tựa lồi trên $C$. Ký hiệu
+    \[ U := \{ x \in C : f(x) \le f(x^{k}) \quad \forall k \ge 0 \}. \]
+
+    Lưu ý rằng $U$ chứa tập nghiệm của \ref{eq:OP}, nên nó không rỗng. Lấy $\hat{x} \in U$. Vì $f(x^{k}) \ge f(\hat{x})$ với mọi $k \ge 0$, ta có
+    \begin{equation} \label{eq:proof_9}
+        \langle \nabla f(x^{k}), \hat{x} - x^{k} \rangle \le 0 \quad \forall k \ge 0.
+    \end{equation}
+
+    Kết hợp (\ref{eq:proof_8}) và (\ref{eq:proof_9}), ta có
+    \begin{equation} \label{eq:proof_10}
+        \| x^{k+1} - \hat{x} \|^{2} \le \| x^{k} - \hat{x} \|^{2} - \| x^{k+1} - x^{k} \|^{2} + 2 \lambda_{k} \langle \nabla f(x^{k}), x^{k} - x^{k+1} \rangle.
+    \end{equation}
+
+    Áp dụng Bổ đề \ref{lemma:1} với $a_{k} = \| x^{k} - \hat{x} \|^{2}$, $b_{k} = 2\lambda_{k} \langle \nabla f(x^{k}), x^{k} - x^{k+1} \rangle$, ta suy ra rằng dãy $\{\| x^{k} - \hat{x} \|\}$ là hội tụ với mọi $\hat{x} \in U$. Vì dãy $\{x^{k}\}$ là bị chặn, tồn tại một dãy con $\{x^{k_{i}}\} \subset \{x^{k}\}$ sao cho $\lim_{i \to \infty} x^{k_{i}} = \bar{x} \in C$. Từ (\ref{eq:proof_6}), ta biết rằng dãy $\{f(x^{k})\}$ là không tăng và hội tụ. Từ đó ta có $\lim_{k \to \infty} f(x^{k}) = f(\bar{x})$ và $f(\bar{x}) \le f(x^{k})$ với mọi $k \ge 0$. Điều này có nghĩa là $\bar{x} \in U$ và dãy $\{\| x^{k} - \bar{x} \|\}$ là hội tụ.
+
+    Do đó,
+    \[ \lim_{k \to \infty} \| x^{k} - \bar{x} \| = \lim_{i \to \infty} \| x^{k_{i}} - \bar{x} \| = 0. \]
+
+    Lưu ý rằng mỗi điểm giới hạn của $\{x^{k}\}$ là một điểm dừng của bài toán. Khi đó, toàn bộ dãy $\{x^{k}\}$ hội tụ về $\bar{x}$ – một điểm dừng của bài toán. Hơn nữa, khi $f$ là giả lồi, điểm dừng này trở thành một nghiệm của \ref{eq:OP}.
+\end{proof}
+
+\begin{remark}
+    Trong Thuật toán GDA, ta có thể chọn $\lambda_{0} = \lambda$, với hằng số $\lambda \le 2(1-\sigma)/L$.
+    Khi đó, ta có $(1-\sigma)/\lambda_{0} - L/2 \ge 0$. Kết hợp với (\ref{eq:proof_5}), ta thấy rằng điều kiện $f(x^{k+1}) \le f(x^{k}) - \sigma \langle \nabla f(x^{k}), x^{k} - x^{k+1} \rangle$ được thỏa mãn và cỡ bước $\lambda_{k} = \lambda$ cho mọi bước $k$.
+    Do đó, Thuật toán GDA vẫn có thể áp dụng cho cỡ bước là hằng số $\lambda \le 2(1-\sigma)/L$. Đối với bất kỳ $\lambda \in (0, 2/L)$, tồn tại $\sigma \in (0, 1)$ sao cho $\lambda \le 2(1-\sigma)/L$. Kết quả là, nếu giá trị của hằng số Lipschitz $L$ đã được biết trước, ta có thể chọn cỡ bước là hằng số $\lambda \in (0, 2/L)$ như trong thuật toán gradient descent (GD) để giải các bài toán quy hoạch lồi.
+    Thuật toán GD này đã được đề xuất trong các công trình trước đây. Vì nó là một trường hợp đặc biệt của Thuật toán GDA, sự hội tụ của nó được đảm bảo như các khẳng định trong Định lý \ref{thm:convergence}.
+\end{remark}
+
+\begin{algorithm}[htbp]
+\caption{Thuật toán Gradient Descent (GD)}
+\begin{algorithmic}[1]
+\State \textbf{Bước 0.} Chọn $x^{0} \in C,\ \lambda \in (0, 2/L)$. Đặt $k = 0$.
+\State \textbf{Bước 1.} Từ $x^{k}$, tính toán $x^{k+1} = P_{C}(x^{k} - \lambda \nabla f(x^{k}))$
+\State \textbf{Bước 2.} Kiểm tra điều kiện dừng
+\If{$x^{k+1} = x^{k}$}
+    \State \text{DỪNG}
+\Else
+    \State Cập nhật $k := k + 1$ và quay lại \textbf{Bước 1}.
+\EndIf
+\end{algorithmic}
+\end{algorithm}
+
+Lưu ý rằng tất cả các khẳng định của Định lý \ref{thm:convergence} vẫn đúng cho dãy $\{x^{k}\}$ được tạo ra bởi Thuật toán GD.
+Bây giờ, ta ước lượng tốc độ hội tụ của Thuật toán GDA trong việc giải các bài toán tối ưu hóa không ràng buộc.
+
+\begin{corollary} \label{cor:1}
+    Giả sử rằng $f$ là lồi, $C = \mathbb{R}^{m}$ và $\{x^{k}\}$ là dãy được tạo ra bởi Thuật toán GDA. Khi đó,
+    \begin{equation}
+        f(x^{k}) - f(x^{*}) = O\left(\frac{1}{k}\right) \nonumber
+    \end{equation}
+    trong đó $x^{*}$ là một nghiệm của bài toán.
+\end{corollary}
+
+\begin{proof}
+    Gọi $x^{*}$ là một nghiệm của bài toán. Ký hiệu $\Delta_{k} := f(x^{k}) - f(x^{*})$. Từ (\ref{eq:proof_6}), lưu ý rằng $x^{k} - x^{k+1} = \lambda_{k} \nabla f(x^{k})$, ta có
+    \begin{equation} \label{eq:cor_11}
+        \Delta_{k+1} \le \Delta_{k} - \sigma \lambda_{k_{1}} \| \nabla f(x^{k}) \|^{2} \quad \forall k \ge k_{1}.
+    \end{equation}
+    
+    Mặt khác, vì dãy $\{x^{k}\}$ bị chặn và $f$ là lồi, ta có
+    \begin{align} 
+        0 \le \Delta_{k} &\le \langle \nabla f(x^{k}), x^{k} - x^{*} \rangle \label{eq:cor_12} \nonumber\\
+        &\le M \| \nabla f(x^{k}) \|,
+    \end{align}
+    trong đó $M := \sup \{ \| x^{k} - x^{*} \| : k \ge k_{1} \} < \infty$. Từ (\ref{eq:cor_11}) và (\ref{eq:cor_12}), ta có
+    \begin{equation} \label{eq:cor_13}
+        \Delta_{k+1} \le \Delta_{k} - Q \Delta_{k}^{2} \quad \forall k \ge k_{1},
+    \end{equation}
+    trong đó $Q := \frac{\sigma \lambda_{k_{1}}}{M^{2}}$. Lưu ý rằng $\Delta_{k+1} \le \Delta_{k}$, từ (\ref{eq:cor_13}), ta thu được
+    \[ \frac{1}{\Delta_{k+1}} \ge \frac{1}{\Delta_{k}} + Q \ge \dots \ge \frac{1}{\Delta_{k_{1}}} + (k - k_{1})Q, \]
+    từ đó suy ra
+    \[ f(x^{k}) - f(x^{*}) = O\left(\frac{1}{k}\right). \]
+\end{proof}
+
+Để kết thúc phần này, bài báo \cite{thang2024saaqp} trình bày một biến thể ngẫu nhiên của Thuật toán GDA để áp dụng trong học sâu quy mô lớn. Xét bài toán:
+\begin{equation}
+    \min_{x} \mathbb{E}[f_{\xi}(x)], \nonumber
+\end{equation}
+trong đó $\xi$ là tham số ngẫu nhiên và hàm $f_{\xi}$ là L-smooth (tức là gradient của nó liên tục Lipschitz). Ta đang tạo ra một gradient ngẫu nhiên $\nabla f_{\xi^{k}}(x^{k})$ bằng cách lấy mẫu $\xi^{k}$ tại mỗi lần lặp $k$.
+Biến thể ngẫu nhiên của phương pháp gradient descent, đặc biệt là trong bối cảnh học sâu quy mô lớn, đóng vai trò quan trọng trong việc tối ưu hóa các mô hình phức tạp một cách hiệu quả.
+Khi ta xem xét bài toán tối ưu hóa có dạng:
+\[ \min_{x} \mathbb{E}[f_{\xi}(x)], \]
+trong đó $x$ đại diện cho các tham số của mô hình (như các trọng số trong mạng nơ-ron), $\xi$ là một tham số ngẫu nhiên, và $f_{\xi}(x)$ là một hàm L-smooth, chúng tôi đang đối phó với một kịch bản nơi hàm mục tiêu được định nghĩa là giá trị kỳ vọng của một số hàm ngẫu nhiên $f_{\xi}(x)$ nào đó. Khuôn khổ này là điển hình trong học máy, nơi $f_{\xi}(x)$ thường đại diện cho hàm mất mát (loss function) được tính toán trên một tập con (lô/batch) của dữ liệu huấn luyện, và $\xi$ đại diện cho tính ngẫu nhiên trong việc lựa chọn tập con này.
+
+Dưới đây là mô tả chi tiết của thuật toán SGDA. Các tác giả dành lại các kết quả lý thuyết của Thuật toán SGDA cho các nghiên cứu sau này.
+
+\begin{algorithm}[H]
+\caption{Thuật toán Thích nghi Gradient Descent Ngẫu nhiên (SGDA)}
+\begin{algorithmic}[1]
+\State \textbf{Bước 0.} Chọn $x^{0} \in C,\ \lambda_{0} \in (0, +\infty),\ \sigma,\ \kappa \in (0, 1)$. Đặt $k=0$.
+\State \textbf{Bước 1.} Lấy mẫu $\xi^{k}$ và tính $x^{k+1} = P_{C}(x^{k} - \lambda_{k}\nabla f_{\xi^{k}}(x^{k}))$.
+\If{$f_{\xi^{k}}(x^{k+1}) \le f_{\xi^{k}}(x^{k}) - \sigma \langle \nabla f_{\xi^{k}}(x^{k}), x^{k} - x^{k+1} \rangle$}
+    \State Đặt $\lambda_{k+1} := \lambda_{k}$
+\Else
+    \State Đặt $\lambda_{k+1} := \kappa\lambda_{k}$
+\EndIf 
+
+\State \textbf{Bước 2.} Kiểm tra điều kiện dừng
+\If{$x^{k+1} = x^{k}$} 
+    \State \text{DỪNG}
+\Else 
+    \State Cập nhật $k := k + 1$ và quay lại \textbf{Bước 1}.
+\EndIf
+\end{algorithmic}
+\end{algorithm}
